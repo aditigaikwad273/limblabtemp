@@ -1,0 +1,13 @@
+<% content_for(:title) { "Request Password" } %>
+
+<div id="login">
+  <h2>Request Password</h2>
+  <%= semantic_form_for @password, builder: ActiveAdmin::FormBuilder do |f| %>
+    <%= f.inputs do %>
+      <%= f.input :email %>
+    <% end %>
+    <%= f.actions class: :buttons do %>
+      <%= f.action :submit, label: 'Request Password' %>
+    <% end %>
+  <% end %>
+</div>
