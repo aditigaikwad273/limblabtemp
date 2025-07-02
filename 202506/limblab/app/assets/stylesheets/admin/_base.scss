@@ -1,0 +1,45 @@
+$primary-color: #A8A356;
+$secondary-color: #576C64;
+$page-header-text-color: #f0f0f0;
+$form-label-color: #8a949e;
+$table-stripe-color: lighten($primary-color, 65%);
+
+@import "active_admin/mixins";
+
+@mixin gradient($start, $end) {
+  background-color: $start;
+}
+
+@mixin text-shadow($color: #fff, $x: 0, $y: 1px, $blur: 0) {
+  text-shadow: none;
+}
+
+@mixin dark-button {
+  @include default-button;
+  border: solid 1px $primary-color;
+  @include border-colors(lighten($primary-color, 3%), $primary-color, darken($primary-color, 6%));
+}
+
+@mixin sans-family {
+  font-family: -apple-system,
+  BlinkMacSystemFont,
+  "Avenir Next",
+  "Avenir",
+  "Segoe UI",
+  "Lucida Grande",
+  "Helvetica Neue",
+  "Helvetica",
+  "Fira Sans",
+  "Roboto",
+  "Noto",
+  "Droid Sans",
+  "Cantarell",
+  "Oxygen",
+  "Ubuntu",
+  "Franklin Gothic Medium",
+  "Century Gothic",
+  "Liberation Sans",
+  sans-serif;
+}
+
+@import "active_admin/base";
