@@ -36,12 +36,6 @@ target 'Limb Lab' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'Limb LabTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-  
-
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
