@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { View, StyleSheet, Text, Image, FlatList, Animated, Dimensions, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Styles, Colors, Images } from "../theme/Index"
-import { LiquidLike } from "react-native-animated-pagination-dots"
+// import { LiquidLike } from "react-native-animated-pagination-dots"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { RFValue } from "react-native-responsive-fontsize"
 import { TouchableOpacity } from "react-native"
@@ -91,7 +91,8 @@ export default OnboardingScreen = (props) => {
 								<TouchableOpacity
 									style={styles.button}
 									onPress={async () => {
-										await analytics().logEvent("onboarding", {
+										try{
+											await analytics().logEvent("onboarding", {
 											page: item.title,
 										})
 										if (item.title === "Welcome to Limb Lab") {
@@ -106,6 +107,9 @@ export default OnboardingScreen = (props) => {
 											AsyncStorage.setItem("onboardingComplete", "yes")
 											props.navigation.replace("LandingScreen")
 										}
+										}catch (error) {
+											console.error("Error logging onboarding event:", error)
+										}
 									}}
 								>
 									<Text style={styles.buttonText}>{item.buttonText}</Text>
@@ -116,7 +120,7 @@ export default OnboardingScreen = (props) => {
 				}}
 			/>
 
-			<LiquidLike
+			{/* <LiquidLike
 				data={onboardingScreens}
 				scrollX={scrollX}
 				scrollOffset={scrollX}
@@ -128,7 +132,7 @@ export default OnboardingScreen = (props) => {
 				containerStyle={{
 					bottom: 50,
 				}}
-			/>
+			/> */}
 		</SafeAreaView>
 	)
 }
