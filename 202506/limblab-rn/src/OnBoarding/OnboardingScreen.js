@@ -93,20 +93,20 @@ export default OnboardingScreen = (props) => {
 									onPress={async () => {
 										try{
 											await analytics().logEvent("onboarding", {
-											page: item.title,
-										})
-										if (item.title === "Welcome to Limb Lab") {
-											await analytics().logEvent("onboarding_start")
-										}
-										if (item.title === "Notifications") {
-											await analytics().logEvent("onboarding_last")
-										}
-										if (index + 1 < onboardingScreens.length) {
-											setActiveIndex(activeIndex + 1)
-										} else if (index + 1 == onboardingScreens.length) {
-											AsyncStorage.setItem("onboardingComplete", "yes")
-											props.navigation.replace("LandingScreen")
-										}
+												page: item.title,
+											})
+											if (item.title === "Welcome to Limb Lab") {
+												await analytics().logEvent("onboarding_start")
+											}
+											if (item.title === "Notifications") {
+												await analytics().logEvent("onboarding_last")
+											}
+											if (index + 1 < onboardingScreens.length) {
+												setActiveIndex(activeIndex + 1)
+											} else if (index + 1 == onboardingScreens.length) {
+												AsyncStorage.setItem("onboardingComplete", "yes")
+												props.navigation.replace("LandingScreen")
+											}
 										}catch (error) {
 											console.error("Error logging onboarding event:", error)
 										}
