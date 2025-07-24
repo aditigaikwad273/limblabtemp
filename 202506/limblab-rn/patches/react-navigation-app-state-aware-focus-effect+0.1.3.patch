@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-navigation-app-state-aware-focus-effect/src/index.ts b/node_modules/react-navigation-app-state-aware-focus-effect/src/index.ts
+index 93d8444..0a595cc 100644
+--- a/node_modules/react-navigation-app-state-aware-focus-effect/src/index.ts
++++ b/node_modules/react-navigation-app-state-aware-focus-effect/src/index.ts
+@@ -55,10 +55,10 @@ export default function useAppStateAwareFocusEffect(effect: EffectCallback) {
+       }
+     };
+ 
+-    AppState.addEventListener('change', handler);
++    const appStateListener = AppState.addEventListener('change', handler);
+ 
+     return () => {
+-      AppState.removeEventListener('change', handler);
++     appStateListener?.remove()
+ 
+       cleanupIfNeeded(cleanup);
+     };

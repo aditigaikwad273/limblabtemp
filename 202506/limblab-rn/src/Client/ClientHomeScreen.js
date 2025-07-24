@@ -244,6 +244,10 @@ export default ClientHomeScreen = (props) => {
 	// }, [officeImage, clinician, clinicianImage])
 
 	const makeCall = () => {
+		if ((!officeNumber && Platform.OS === "android") || (!officeNumberIOS && Platform.OS === "ios")) {
+			Alert.alert("No office number available")
+			return
+		}
 		let phoneNumber = ""
 
 		if (Platform.OS === "android") {
