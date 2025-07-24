@@ -3,10 +3,7 @@ import UserNotifications
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-import RNCPushNotificationIOS
 import Firebase
-import AppCenterReactNative
-import AppCenterReactNativeCrashes
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -25,8 +22,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     // Initialize AppCenter
     AppCenterReactNative.register()
-    AppCenterReactNativeCrashes.register(withAutomaticProcessing: true)
-    
+    AppCenterReactNativeCrashes.register()
+
     // Set UNUserNotificationCenter delegate
     UNUserNotificationCenter.current().delegate = self
 
@@ -50,15 +47,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
   // MARK: - Push Notification Handling
 
-  func application(_ application: UIApplication,
-                   didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    RNCPushNotificationIOS.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
-  }
+  // func application(_ application: UIApplication,
+  //                  didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+  //   RNCPushNotificationIOS.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
+  // }
 
-  func application(_ application: UIApplication,
-                   didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    RNCPushNotificationIOS.didFailToRegisterForRemoteNotifications(withError: error)
-  }
+  // func application(_ application: UIApplication,
+  //                  didFailToRegisterForRemoteNotificationsWithError error: Error) {
+  //   RNCPushNotificationIOS.didFailToRegisterForRemoteNotificationsWithError(error)
+  // }
 
   func application(_ application: UIApplication,
                    didReceiveRemoteNotification userInfo: [AnyHashable : Any],
@@ -83,6 +80,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 // MARK: - React Native Delegate
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+
+  // Disable faulty third-party Fabric components registration
+  @objc func thirdPartyFabricComponents() -> [String: Any] {
+    return [:]
+  }
+
   override func sourceURL(for bridge: RCTBridge!) -> URL! {
     return self.bundleURL()
   }
@@ -95,3 +98,4 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 #endif
   }
 }
+
