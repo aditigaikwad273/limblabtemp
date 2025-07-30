@@ -1,0 +1,10 @@
+@import "admin/base";
+
+body.logged_out .flash {
+  text-align: center;
+}
+
+
+body.logged_out .message {
+  text-align: center;
+}
