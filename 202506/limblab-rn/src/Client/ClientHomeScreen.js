@@ -309,7 +309,7 @@ export default ClientHomeScreen = (props) => {
 							<Button
 								title="Go To Messages"
 								fullWidthPadding={40}
-								onPress={() => props.navigation.navigate("MessageScreen")}
+								onPress={() => navigation.navigate("MessageScreen")}
 							/>
 						</View>
 					</Card>
