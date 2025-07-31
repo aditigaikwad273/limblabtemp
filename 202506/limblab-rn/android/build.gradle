@@ -2,28 +2,27 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
+        buildToolsVersion = "33.0.0"
         minSdkVersion = 26
-        compileSdkVersion = 35
-        targetSdkVersion = 35
-        ndkVersion = "27.1.12297006"
-        kotlinVersion = "2.0.21"
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        ndkVersion = "23.1.7779620"
         googlePlayServicesVersion = "+"
-        firebaseCrashlyticsPluginVersion = "2.9.9"
-        firebasePerfPluginVersion = "1.4.2"
+        firebaseMessagingVersion = "+"
+        firebaseVersion = "+"
+        kotlinVersion = "1.8.10"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.1")
+        classpath("com.android.tools.build:gradle:7.0.0")
         classpath('com.google.gms:google-services:4.4.1')
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
+        classpath('com.google.firebase:firebase-crashlytics-gradle:2.9.9')
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
 
@@ -44,5 +43,3 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 }
-
-apply plugin: "com.facebook.react.rootproject"

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { View, StyleSheet, Text, Image, FlatList, Animated, Dimensions, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Styles, Colors, Images } from "../theme/Index"
-// import { LiquidLike } from "react-native-animated-pagination-dots"
+import { LiquidLike } from "react-native-animated-pagination-dots"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { RFValue } from "react-native-responsive-fontsize"
 import { TouchableOpacity } from "react-native"
@@ -91,24 +91,20 @@ export default OnboardingScreen = (props) => {
 								<TouchableOpacity
 									style={styles.button}
 									onPress={async () => {
-										try{
-											await analytics().logEvent("onboarding", {
-												page: item.title,
-											})
-											if (item.title === "Welcome to Limb Lab") {
-												await analytics().logEvent("onboarding_start")
-											}
-											if (item.title === "Notifications") {
-												await analytics().logEvent("onboarding_last")
-											}
-											if (index + 1 < onboardingScreens.length) {
-												setActiveIndex(activeIndex + 1)
-											} else if (index + 1 == onboardingScreens.length) {
-												AsyncStorage.setItem("onboardingComplete", "yes")
-												props.navigation.replace("LandingScreen")
-											}
-										}catch (error) {
-											console.error("Error logging onboarding event:", error)
+										await analytics().logEvent("onboarding", {
+											page: item.title,
+										})
+										if (item.title === "Welcome to Limb Lab") {
+											await analytics().logEvent("onboarding_start")
+										}
+										if (item.title === "Notifications") {
+											await analytics().logEvent("onboarding_last")
+										}
+										if (index + 1 < onboardingScreens.length) {
+											setActiveIndex(activeIndex + 1)
+										} else if (index + 1 == onboardingScreens.length) {
+											AsyncStorage.setItem("onboardingComplete", "yes")
+											props.navigation.replace("LandingScreen")
 										}
 									}}
 								>
@@ -120,7 +116,7 @@ export default OnboardingScreen = (props) => {
 				}}
 			/>
 
-			{/* <LiquidLike
+			<LiquidLike
 				data={onboardingScreens}
 				scrollX={scrollX}
 				scrollOffset={scrollX}
@@ -132,7 +128,7 @@ export default OnboardingScreen = (props) => {
 				containerStyle={{
 					bottom: 50,
 				}}
-			/> */}
+			/>
 		</SafeAreaView>
 	)
 }

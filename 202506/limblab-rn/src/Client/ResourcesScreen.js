@@ -44,17 +44,17 @@ export default ResourcesScreen = (props) => {
 		},
 		{
 			title: "Privacy Policy",
-			status: "https://limblab.com/privacy/",
+			status: "https://limblab.com/privacy-policy/",
 			useLinking: true,
 		},
 		{
 			title: "HIPAA Notice of Privacy Practices",
-			status: "https://limblab.com/hipaa/",
+			status: "https://limblab.com/hipaa-privacy-notice/",
 			useLinking: true,
 		},
 		{
 			title: "Terms and Conditions",
-			status: "https://limblab.com/terms/",
+			status: "https://limblab.com/terms-conditions/",
 		},
 	]
 
