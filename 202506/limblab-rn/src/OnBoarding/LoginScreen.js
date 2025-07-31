@@ -191,7 +191,7 @@ const LoginScreen = (props) => {
 					style={{
 						alignItems: "center",
 						height: windowHeight * 0.1,
-						marginTop: windowHeight * 0.06,
+						marginTop: windowHeight * 0.08,
 						width: windowWidth,
 					}}
 				>

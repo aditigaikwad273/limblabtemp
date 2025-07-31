@@ -76,27 +76,27 @@ export default ClientHomeScreen = (props) => {
 		React.useCallback(() => {
 			let active = true
 			setNewList(0)
-			;(async () => {
-				try {
-					const conversationsClient = await ConversationsClient.create(userToken)
-					const conversationList = await conversationsClient.getSubscribedConversations()
-					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
-						let total = 0
-						if (conversation?._internalState?.uniqueName == user.data.email) {
-							total += await conversation.getUnreadMessagesCount()
-							setNewList(total)
-						}
-						// setConversations(conversation.getUnreadMessagesCount() || [])
+				;(async () => {
+					try {
+						const conversationsClient = await ConversationsClient.create(userToken)
+						const conversationList = await conversationsClient.getSubscribedConversations()
+						conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+							let total = 0
+							if (conversation?._internalState?.uniqueName == user.data.email) {
+								total += await conversation.getUnreadMessagesCount()
+								setNewList(total)
+							}
+							// setConversations(conversation.getUnreadMessagesCount() || [])
 
-						// Fired when the attributes or the metadata of a conversation have been updated
-					})
-					if (active) {
-						setConversations(conversationList.items || [])
+							// Fired when the attributes or the metadata of a conversation have been updated
+						})
+						if (active) {
+							setConversations(conversationList.items || [])
+						}
+					} catch (e) {
+						console.log("this is an error", e)
 					}
-				} catch (e) {
-					console.log("this is an error", e)
-				}
-			})()
+				})()
 
 			return () => {
 				active = false
@@ -283,7 +283,7 @@ export default ClientHomeScreen = (props) => {
 
 	return (
 		<SafeAreaView style={styles.homeContainer}>
-			<ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+			<ScrollView contentContainerStyle={{ paddingBottom: 100, paddingTop: Platform.OS == 'ios' ? 50 : 0 }}>
 				<Text style={{ ...Styles.sfBoldFont, fontSize: 34, marginLeft: windowWidth * 0.03 }}> Hello {userName}!</Text>
 				{!noClinician ? (
 					<Card containerStyle={{ borderRadius: 20, width: windowWidth * 0.93, alignItems: "center" }}>
@@ -353,14 +353,16 @@ export default ClientHomeScreen = (props) => {
 								source={{ uri: `${officeImage}` }}
 								style={{ width: windowWidth * 0.93, borderRadius: 20, height: 200 }}
 							/>
-							<View style={{ padding: 15 }}>
-								<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 18, color: Colors.olive }}>
-									YOUR OFFICE
-								</Text>
-								<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 28, marginBottom: 20 }}>
-									{officeLocation}
-								</Text>
-								<View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
+							<View style={{ paddingVertical: 15 }}>
+								<View style={{ paddingHorizontal: 15 }} >
+									<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 18, color: Colors.olive }}>
+										YOUR OFFICE
+									</Text>
+									<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 28, marginBottom: 20 }}>
+										{officeLocation}
+									</Text>
+								</View>
+								<View style={{ flexDirection: "row", justifyContent: 'space-between', paddingHorizontal: 6 }}>
 									<Pressable style={styles.button1} onPress={openOffice}>
 										<Text style={styles.buttonText1}>MAP</Text>
 									</Pressable>
@@ -502,7 +504,6 @@ const styles = StyleSheet.create({
 		height: 50,
 		justifyContent: "center",
 		alignItems: "center",
-		marginLeft: 15,
 	},
 	button1: {
 		backgroundColor: Colors.white,

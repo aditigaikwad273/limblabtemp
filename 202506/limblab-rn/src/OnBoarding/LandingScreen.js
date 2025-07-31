@@ -57,7 +57,7 @@ const LandingScreen = (props) => {
 	return (
 		<SafeAreaView style={styles.mainContainer}>
 			<View
-				style={{ alignItems: "center", height: windowHeight * 0.1, marginTop: windowHeight * 0.06, width: windowWidth }}
+				style={{ alignItems: "center", height: windowHeight * 0.1, marginTop: windowHeight * 0.08, width: windowWidth }}
 			>
 				<Image source={Images.logoBig} style={{ width: windowWidth * 0.8 }} />
 			</View>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
 		marginRight: 5,
 	},
 	confirmButton: {
-		marginBottom: 20,
+		marginBottom: 30,
 	},
 	clinicianText: {
 		...Styles.boldFont,

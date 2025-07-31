@@ -1574,30 +1574,8 @@ PODS:
   - react-native-video/Video (6.0.0-beta.2):
     - PromisesSwift
     - React-Core
-  - react-native-webview (13.15.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
+  - react-native-webview (11.4.4):
     - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - React-NativeModulesApple (0.79.5):
     - glog
     - hermes-engine
@@ -2561,7 +2539,7 @@ SPEC CHECKSUMS:
   react-native-mail: 8fdcd3aef007c33a6877a18eb4cf7447a1d4ce4a
   react-native-safe-area-context: 106c19bea39450152d5f77832adde6c1981c481a
   react-native-video: 806f18bba69b4bfe02e62679acb6b732c8355ee5
-  react-native-webview: 73e15e8ad1d4be940192bb81953fc0e2c756a174
+  react-native-webview: cc2a1fd8149a2654d1408793daa62baadfc0bd96
   React-NativeModulesApple: d2b9bd7d55dfd864e56c76592777ad32e8ab1f3d
   React-oscompat: 0592889a9fcf0eacb205532028e4a364e22907dd
   React-perflogger: 634408a9a0f5753faa577dfa81bc009edca01062

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Dimensions } from "react-native"
-import { ListItem } from "react-native-elements"
+import { ListItem, Icon } from "react-native-elements"
 const windowWidth = Dimensions.get("window").width
 import { Styles } from "../theme/Index"
 
@@ -47,7 +47,7 @@ const FoldersScreen = ({ navigation }) => {
 				<ListItem.Content>
 					<ListItem.Title style={{ ...Styles.boldFont, paddingLeft: 0 }}>{item.name}</ListItem.Title>
 				</ListItem.Content>
-				<ListItem.Chevron size={26} />
+				<Icon size={26} name="chevron-right" type="feather" color={'gray'} />
 			</ListItem>
 		</TouchableOpacity>
 	)
