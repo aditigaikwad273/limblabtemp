@@ -351,8 +351,100 @@ export default MessageScreen = (props) => {
 	// <InputToolbar {...props} containerStyle={{ padding: 5 }} />
 	return (
 		<>
-			<Text>Messages shown here V9</Text>
-			<GiftedChat></GiftedChat>
+			<GiftedChat
+				bottomOffset={1}
+				isKeyboardInternallyHandled={true}
+				renderUsernameOnMessage={true}
+				messages={messages}
+				messagesContainerStyle={styles.messageContainer}
+				onSend={(messages) => onSend(messages)}
+				alwaysShowSend={true}
+				showAvatarForEveryMessage={true}
+				user={{
+					_id: user.data.email,
+					name: `${(user.data.firstName, user.data.lastName)}`,
+				}}
+				renderMessageVideo={(props) => {
+					return (
+						<VideoPlayer
+							url={props.currentMessage.video}
+							style={{
+								width: 200,
+								height: 200,
+								margin: 3,
+								borderRadius: 5,
+								overflow: "hidden",
+								backgroundColor: "black",
+							}}
+						/>
+					)
+				}}
+				renderSend={(props) => (
+					<Send
+						{...props}
+						containerStyle={{
+							width: 30,
+							height: 30,
+							bottom: 12,
+							right: 10,
+							justifyContent: "center",
+						}}
+					>
+						<Image source={Images.icnSend} />
+					</Send>
+				)}
+				renderComposer={renderComposer}
+				// renderInputToolbar={customInputToolbar}
+				renderActions={(props) => (
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<Actions
+							{...props}
+							wrapperStyle={{ backgroundColor: "green" }}
+							containerStyle={{
+								paddingTop: 3,
+								margin: 5,
+							}}
+							icon={() => ({
+								...(urgency === "0" ? <Image source={Images.icnImportant} /> : <Image source={Images.icnImportant} />),
+							})}
+							options={{
+								URGENT: () => {
+									setUrgency("1")
+								},
+								Cancel: () => {
+									setUrgency("0")
+								},
+							}}
+						/>
+						<TouchableOpacity style={{ margin: 5 }} onPress={openCamera}>
+							<Image source={Images.icnCamera} />
+						</TouchableOpacity>
+						<TouchableOpacity style={{ margin: 5, paddingTop: 4 }} onPress={openPicker}>
+							<Image source={Images.icnPhoto} />
+						</TouchableOpacity>
+					</View>
+				)}
+				renderMessage={(props) => (
+					<Message
+						{...props}
+						containerStyle={{
+							right: {
+								marginBottom: image?.uri ? 170 : 50,
+							},
+							left: {
+								marginBottom: image?.uri ? 170 : 50,
+							},
+						}}
+						renderBubble={renderBubble}
+					/>
+				)}
+			/>
 			<Modal
 				style={{ margin: 0 }}
 				animationType="slide"
