@@ -64,6 +64,7 @@ export default ClinicianHomeScreen = (props) => {
 
 					if (active && data) {
 						setClientList(data.data)
+						setNewList(data.data.map((item) => ({ ...item, unRead: 0 })))
 					}
 				} catch (e) {
 					console.log("this is an error", e)
@@ -81,7 +82,6 @@ export default ClinicianHomeScreen = (props) => {
 			if (conversations.length === 0) return
 			let clientObj = []
 			let total = 0
-			setNewList([])
 
 			for (let i = 0; i < conversations.length; i++) {
 				const item = conversations[i]
@@ -131,12 +131,14 @@ export default ClinicianHomeScreen = (props) => {
 			let active = true
 			;(async () => {
 				try {
-					conversationsClient.current = await ConversationsClient.create(userToken)
-					// conversationsClient.conversations('CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX').remove();
-					const conversationList = await conversationsClient.current.getSubscribedConversations()
-
 					if (active) {
-						setConversations(conversationList.items || [])
+						console.log(userToken)
+						const userSubscribedConv = ConversationsClient(userToken)
+						conversationsClient.current = userSubscribedConv
+						userSubscribedConv.on("initialized", async () => {
+							const conversationList = await userSubscribedConv.getSubscribedConversations()
+							setConversations(conversationList.items || [])
+						})
 					}
 				} catch (e) {
 					console.log("this is an error", e)
@@ -230,10 +232,10 @@ export default ClinicianHomeScreen = (props) => {
 				key={client.email}
 				style={{ width: windowWidth, marginLeft: windowWidth * 0.04, textAlign: "left", backgroundColor: "#F3F3F3" }}
 			>
-				<TouchableOpacity key={client.email} onPress={() => getClientConvo(client, client)}>
+				<TouchableOpacity onPress={() => getClientConvo(client)}>
 					<ListItem bottomDivider containerStyle={{ backgroundColor: "#F3F3F3" }}>
 						<ListItem.Content>
-							<View style={{ flexDirection: "row", justifyContent: "space-between", textAlign: "center" }}>
+							<View key={client.email} style={{ flexDirection: "row", justifyContent: "space-between", textAlign: "center" }}>
 								<ListItem.Title style={{ ...Styles.boldFont, fontSize: 21 }}>
 									{client.first_name} {client.last_name}
 								</ListItem.Title>
