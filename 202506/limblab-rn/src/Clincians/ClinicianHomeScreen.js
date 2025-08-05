@@ -64,6 +64,7 @@ export default ClinicianHomeScreen = (props) => {
 
 					if (active && data) {
 						setClientList(data.data)
+						setNewList(data.data.map((item) => ({ ...item, unRead: 0 })))
 					}
 				} catch (e) {
 					console.log("this is an error", e)
@@ -81,7 +82,6 @@ export default ClinicianHomeScreen = (props) => {
 			if (conversations.length === 0) return
 			let clientObj = []
 			let total = 0
-			setNewList([])
 
 			for (let i = 0; i < conversations.length; i++) {
 				const item = conversations[i]

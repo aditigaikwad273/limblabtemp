@@ -84,8 +84,8 @@ android {
         applicationId "com.limblab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 134
-        versionName "1.9.4"
+        versionCode 1
+        versionName "2.0.0"
         multiDexEnabled true
     }
     signingConfigs {
