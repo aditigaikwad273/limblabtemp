@@ -132,7 +132,6 @@ export default ClinicianHomeScreen = (props) => {
 			;(async () => {
 				try {
 					if (active) {
-						console.log(userToken)
 						const userSubscribedConv = new ConversationsClient(userToken)
 						conversationsClient.current = userSubscribedConv
 						userSubscribedConv.on("initialized", async () => {
