@@ -61,7 +61,7 @@ export default RegisterPrivacy = (props) => {
 							<ListItem.Content>
 								<ListItem.Title style={{}}>{item.title}</ListItem.Title>
 							</ListItem.Content>
-							<ListItem.Chevron size={26} />
+							<Icon size={26} name="chevron-right" type="feather" color={'gray'} />
 						</ListItem>
 					</TouchableOpacity>
 				))}

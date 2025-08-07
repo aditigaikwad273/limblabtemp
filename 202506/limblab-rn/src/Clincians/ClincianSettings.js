@@ -184,7 +184,7 @@ export default ClinicianSettings = (props) => {
 									trackColor={{ false: Colors.lightGrey, true: Colors.olive }}
 								/>
 							) : (
-								<ListItem.Chevron size={26} />
+								<Icon size={26} name="chevron-right" type="feather" color={'gray'} />
 							)}
 						</ListItem>
 					</TouchableOpacity>

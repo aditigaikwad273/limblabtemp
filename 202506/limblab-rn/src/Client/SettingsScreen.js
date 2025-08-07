@@ -13,7 +13,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Styles, Colors, Images } from "../theme/Index"
-import { ListItem, Switch } from "react-native-elements"
+import { ListItem, Switch, Icon as EIcon } from "react-native-elements"
 import createAxiosInstance from "../utils/API"
 import { useNavigation } from "@react-navigation/native"
 import { AuthContext } from "../utils/authContext"
@@ -247,7 +247,7 @@ export default Settings = (props) => {
 									trackColor={{ false: Colors.lightGrey, true: Colors.olive }}
 								/>
 							) : (
-								<ListItem.Chevron size={26} />
+								<EIcon size={26} name="chevron-right" type="feather" color={'gray'} />
 							)}
 						</ListItem>
 					</TouchableOpacity>

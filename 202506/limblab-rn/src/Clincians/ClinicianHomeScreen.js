@@ -48,28 +48,28 @@ export default ClinicianHomeScreen = (props) => {
 		React.useCallback(() => {
 			let active = true
 
-			;(async () => {
-				try {
-					const api = createAxiosInstance(userCode)
+				;(async () => {
+					try {
+						const api = createAxiosInstance(userCode)
 
-					const locationData = await api.get("/api/v1/clinician/practices")
+						const locationData = await api.get("/api/v1/clinician/practices")
 
-					if (locationData.data?.length > 0) {
-						let primaryLocation = locationData.data.find((d) => d.primary)
-						if (!primaryLocation) primaryLocation = locationData.data[0]
-						setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
+						if (locationData.data?.length > 0) {
+							let primaryLocation = locationData.data.find((d) => d.primary)
+							if (!primaryLocation) primaryLocation = locationData.data[0]
+							setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
+						}
+
+						const data = await api.get("/api/v1/clinician/relationships")
+
+						if (active && data) {
+							setClientList(data.data)
+							setNewList(data.data.map((item) => ({ ...item, unRead: 0 })))
+						}
+					} catch (e) {
+						console.log("this is an error", e)
 					}
-
-					const data = await api.get("/api/v1/clinician/relationships")
-
-					if (active && data) {
-						setClientList(data.data)
-						setNewList(data.data.map((item) => ({ ...item, unRead: 0 })))
-					}
-				} catch (e) {
-					console.log("this is an error", e)
-				}
-			})()
+				})()
 
 			return () => {
 				active = false
@@ -129,19 +129,19 @@ export default ClinicianHomeScreen = (props) => {
 	useAppStateAwareFocusEffect(
 		React.useCallback(() => {
 			let active = true
-			;(async () => {
-				try {
-					conversationsClient.current = await ConversationsClient.create(userToken)
-					// conversationsClient.conversations('CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX').remove();
-					const conversationList = await conversationsClient.current.getSubscribedConversations()
+				;(async () => {
+					try {
+						conversationsClient.current = await ConversationsClient.create(userToken)
+						// conversationsClient.conversations('CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX').remove();
+						const conversationList = await conversationsClient.current.getSubscribedConversations()
 
-					if (active) {
-						setConversations(conversationList.items || [])
+						if (active) {
+							setConversations(conversationList.items || [])
+						}
+					} catch (e) {
+						console.log("this is an error", e)
 					}
-				} catch (e) {
-					console.log("this is an error", e)
-				}
-			})()
+				})()
 
 			return () => {
 				active = false
@@ -241,7 +241,7 @@ export default ClinicianHomeScreen = (props) => {
 							<ListItem.Title style={{ fontSize: 21 }}>{userLocation}</ListItem.Title>
 						</ListItem.Content>
 						<ListItem.Title style={{ fontSize: 21 }}>{client.unRead}</ListItem.Title>
-						<ListItem.Chevron size={26} />
+						<Icon size={26} name="chevron-right" type="feather" color={'gray'} />
 					</ListItem>
 				</TouchableOpacity>
 			</View>
@@ -257,8 +257,8 @@ export default ClinicianHomeScreen = (props) => {
 	}
 
 	return (
-		<Fragment>
-			<SafeAreaView style={{ backgroundColor: "white" }} />
+		// <Fragment>
+		<SafeAreaView style={{ backgroundColor: "white", flex: 1, paddingTop: Platform.OS == 'ios' ? 40 : 0 }}>
 			<View style={{ justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
 				<Image source={Images.logoBig} style={{ width: windowWidth * 0.8 }} />
 				<Text style={{ color: Colors.olive, marginTop: 10 }}>CLINICIAN PORTAL</Text>
@@ -306,7 +306,8 @@ export default ClinicianHomeScreen = (props) => {
 				)}
 				{List}
 			</ScrollView>
-		</Fragment>
+		</SafeAreaView>
+		// </Fragment>
 	)
 }
 

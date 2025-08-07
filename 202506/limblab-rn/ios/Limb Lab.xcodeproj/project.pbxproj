@@ -395,7 +395,7 @@
 				CODE_SIGN_ENTITLEMENTS = limblab/limblab.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = LCQNS2QS8X;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -430,7 +430,7 @@
 				CODE_SIGN_ENTITLEMENTS = limblab/limblab.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = LCQNS2QS8X;
 				INFOPLIST_FILE = limblab/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
