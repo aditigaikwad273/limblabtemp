@@ -131,12 +131,13 @@ export default ClinicianHomeScreen = (props) => {
 			let active = true
 			;(async () => {
 				try {
-					conversationsClient.current = await ConversationsClient.create(userToken)
-					// conversationsClient.conversations('CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX').remove();
-					const conversationList = await conversationsClient.current.getSubscribedConversations()
-
 					if (active) {
-						setConversations(conversationList.items || [])
+						const userSubscribedConv = new ConversationsClient(userToken)
+						conversationsClient.current = userSubscribedConv
+						userSubscribedConv.on("initialized", async () => {
+							const conversationList = await userSubscribedConv.getSubscribedConversations()
+							setConversations(conversationList.items || [])
+						})
 					}
 				} catch (e) {
 					console.log("this is an error", e)

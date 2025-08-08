@@ -59,7 +59,6 @@ export default ClientHomeScreen = (props) => {
 	}, [conversations])
 	const messageCount = async () => {
 		let total = 0
-		setNewList(0)
 
 		for (let i = 0; i < conversations.length; i++) {
 			let item = conversations[i]
@@ -69,23 +68,20 @@ export default ClientHomeScreen = (props) => {
 		}
 		PushNotification.setApplicationIconBadgeNumber(total)
 		setNewList(total)
-
-		return total
 	}
 	useAppStateAwareFocusEffect(
 		React.useCallback(() => {
 			let active = true
-			setNewList(0)
 			;(async () => {
 				try {
-					const conversationsClient = await ConversationsClient.create(userToken)
+					const conversationsClient = new ConversationsClient(userToken)
 					const conversationList = await conversationsClient.getSubscribedConversations()
 					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
 						let total = 0
 						if (conversation?._internalState?.uniqueName == user.data.email) {
 							total += await conversation.getUnreadMessagesCount()
-							setNewList(total)
 						}
+						setNewList(total)
 						// setConversations(conversation.getUnreadMessagesCount() || [])
 
 						// Fired when the attributes or the metadata of a conversation have been updated
