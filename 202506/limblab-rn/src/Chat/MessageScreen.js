@@ -37,6 +37,8 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker"
 import Video from "react-native-video"
 import VideoPlayer from "./VideoPlayer"
 import uuid from "react-native-uuid"
+import NotificationService from '../utils/NotificationService';
+
 export default MessageScreen = (props) => {
 	const { user, mainUser, setMainUser, logout } = useContext(AuthContext)
 	const route = useRoute()
@@ -67,6 +69,9 @@ export default MessageScreen = (props) => {
 
 			fetchData()
 		}
+
+		const n = new NotificationService()
+		n.removeAllDeliveredNotifications()
 	}, [userRole])
 
 	const fetchData = async () => {

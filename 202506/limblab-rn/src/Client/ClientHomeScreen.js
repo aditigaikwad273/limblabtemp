@@ -29,6 +29,7 @@ import PushNotification from "react-native-push-notification"
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import NotificationService from '../utils/NotificationService';
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
 
@@ -77,9 +78,23 @@ export default ClientHomeScreen = (props) => {
 					const conversationsClient = new ConversationsClient(userToken)
 					const conversationList = await conversationsClient.getSubscribedConversations()
 					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+						let firstUpdateReason = ''
+						if (updateReasons.length > 0) {
+							firstUpdateReason = updateReasons[0]
+						}
 						let total = 0
 						if (conversation?._internalState?.uniqueName == user.data.email) {
-							total += await conversation.getUnreadMessagesCount()
+							try {
+								const unReadCount = await conversation.getUnreadMessagesCount()
+								total += unReadCount
+							} catch (error) {
+								console.log("Error getting messages count:", error)
+							}							
+						}
+						if (firstUpdateReason !== 'lastReadMessageIndex') {
+							const n = new NotificationService()
+							n.localNotif()
+							PushNotification.setApplicationIconBadgeNumber(total)
 						}
 						setNewList(total)
 						// setConversations(conversation.getUnreadMessagesCount() || [])

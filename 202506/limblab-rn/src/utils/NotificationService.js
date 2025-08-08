@@ -73,7 +73,6 @@ export default class NotificationService {
       /* Android Only Properties */
       channelId: soundName ? 'sound-channel-id' : 'default-channel-id',
       ticker: 'My Notification Ticker', // (optional)
-      autoCancel: true, // (optional) default: true
       largeIcon: 'ic_launcher', // (optional) default: "ic_launcher"
       smallIcon: 'ic_notification', // (optional) default: "ic_notification" with fallback for "ic_launcher"
       bigText: 'My big text that will be shown when notification is expanded', // (optional) default: "message" prop
@@ -102,8 +101,7 @@ export default class NotificationService {
       message: 'My Notification Message', // (required)
       userInfo: { screen: 'home' }, // (optional) default: {} (using null throws a JSON value '<null>' error)
       playSound: !!soundName, // (optional) default: true
-      soundName: soundName ? soundName : 'default', // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
-      number: 10, // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
+      soundName: soundName ? soundName : 'default' // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
     });
   }
 
@@ -143,8 +141,7 @@ export default class NotificationService {
       message: 'My Notification Message', // (required)
       userInfo: { sceen: "home" }, // (optional) default: {} (using null throws a JSON value '<null>' error)
       playSound: !!soundName, // (optional) default: true
-      soundName: soundName ? soundName : 'default', // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
-      number: 10, // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
+      soundName: soundName ? soundName : 'default' // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
     });
   }
 
@@ -158,6 +155,10 @@ export default class NotificationService {
 
   cancelNotif() {
     PushNotification.cancelLocalNotification(this.lastId);
+  }
+
+  removeAllDeliveredNotifications() {
+    PushNotification.removeAllDeliveredNotifications();
   }
 
   cancelAll() {
