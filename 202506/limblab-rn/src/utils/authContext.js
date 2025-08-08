@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 							}
 							if (typeof props === "function") {
 								// console.warn("props", props)
-								props()
+								props(data.data)
 							}
 						})
 						.catch((error) => {

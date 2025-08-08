@@ -171,39 +171,6 @@ export default ClinicianHomeScreen = (props) => {
 		}
 	}, [newList])
 
-	useEffect(() => {
-		PushNotification.configure({
-			// (optional) Called when Token is generated (iOS and Android)
-			onRegister: function (registration) {
-				const api = createAxiosInstance(userCode)
-				api.post(`/api/v1/${userRole}/devices`, {
-					device: {
-						token: registration.token,
-					},
-				})
-			},
-			// (required) Called when a remote is received or opened, or local notification is opened
-			onNotification: function (notification) {
-				// process the notification
-				// (required) Called when a remote is received or opened, or local notification is opened
-				notification.finish(PushNotificationIOS.FetchResult.NoData)
-			},
-			onAction: function (notification) {
-				// process the action
-			},
-			onRegistrationError: function (err) {
-				console.error(err.message, err)
-			},
-			permissions: {
-				alert: true,
-				badge: true,
-				sound: true,
-			},
-			popInitialNotification: true,
-			requestPermissions: true,
-		})
-		if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
-	}, [])
 
 	const getClientConvo = (info) => {
 		// setSelectedClient(info)
