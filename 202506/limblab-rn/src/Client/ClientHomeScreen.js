@@ -67,7 +67,7 @@ export default ClientHomeScreen = (props) => {
 				total += await item.getUnreadMessagesCount()
 			}
 		}
-		PushNotification.setApplicationIconBadgeNumber(total)
+		//PushNotification.setApplicationIconBadgeNumber(total)
 		setNewList(total)
 	}
 	useAppStateAwareFocusEffect(
@@ -93,7 +93,7 @@ export default ClientHomeScreen = (props) => {
 						}
 						if (firstUpdateReason !== 'lastReadMessageIndex') {
 							const n = new NotificationService()
-							n.localNotif()
+							n.localNotif("You have a new LimbLab message waiting for you")
 							PushNotification.setApplicationIconBadgeNumber(total)
 						}
 						setNewList(total)
