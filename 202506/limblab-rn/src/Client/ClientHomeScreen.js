@@ -29,6 +29,7 @@ import PushNotification from "react-native-push-notification"
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import NotificationService from '../utils/NotificationService';
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
 
@@ -66,7 +67,7 @@ export default ClientHomeScreen = (props) => {
 				total += await item.getUnreadMessagesCount()
 			}
 		}
-		PushNotification.setApplicationIconBadgeNumber(total)
+		//PushNotification.setApplicationIconBadgeNumber(total)
 		setNewList(total)
 	}
 	useAppStateAwareFocusEffect(
@@ -77,9 +78,23 @@ export default ClientHomeScreen = (props) => {
 					const conversationsClient = new ConversationsClient(userToken)
 					const conversationList = await conversationsClient.getSubscribedConversations()
 					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+						let firstUpdateReason = ''
+						if (updateReasons.length > 0) {
+							firstUpdateReason = updateReasons[0]
+						}
 						let total = 0
 						if (conversation?._internalState?.uniqueName == user.data.email) {
-							total += await conversation.getUnreadMessagesCount()
+							try {
+								const unReadCount = await conversation.getUnreadMessagesCount()
+								total += unReadCount
+							} catch (error) {
+								console.log("Error getting messages count:", error)
+							}							
+						}
+						if (firstUpdateReason !== 'lastReadMessageIndex') {
+							const n = new NotificationService()
+							n.localNotif("You have a new LimbLab message waiting for you")
+							PushNotification.setApplicationIconBadgeNumber(total)
 						}
 						setNewList(total)
 						// setConversations(conversation.getUnreadMessagesCount() || [])
@@ -99,40 +114,6 @@ export default ClientHomeScreen = (props) => {
 			}
 		}, [])
 	)
-
-	useEffect(() => {
-		PushNotification.configure({
-			// (optional) Called when Token is generated (iOS and Android)
-			onRegister: function (registration) {
-				const api = createAxiosInstance(userCode)
-				api.post(`/api/v1/${userRole}/devices`, {
-					device: {
-						token: registration.token,
-					},
-				})
-			},
-			// (required) Called when a remote is received or opened, or local notification is opened
-			onNotification: function (notification) {
-				// process the notification
-				// (required) Called when a remote is received or opened, or local notification is opened
-				notification.finish(PushNotificationIOS.FetchResult.NoData)
-			},
-			onAction: function (notification) {
-				// process the action
-			},
-			onRegistrationError: function (err) {
-				console.error(err.message, err)
-			},
-			permissions: {
-				alert: true,
-				badge: true,
-				sound: true,
-			},
-			popInitialNotification: true,
-			requestPermissions: true,
-		})
-		if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
-	}, [])
 
 	const bigFunction = async () => {
 		const api = createAxiosInstance(userCode)
