@@ -29,6 +29,7 @@ import PushNotification from "react-native-push-notification"
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import NotificationService from '../utils/NotificationService';
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
 
@@ -59,7 +60,6 @@ export default ClientHomeScreen = (props) => {
 	}, [conversations])
 	const messageCount = async () => {
 		let total = 0
-		setNewList(0)
 
 		for (let i = 0; i < conversations.length; i++) {
 			let item = conversations[i]
@@ -67,25 +67,36 @@ export default ClientHomeScreen = (props) => {
 				total += await item.getUnreadMessagesCount()
 			}
 		}
-		PushNotification.setApplicationIconBadgeNumber(total)
+		// PushNotification.setApplicationIconBadgeNumber(total)
 		setNewList(total)
-
-		return total
 	}
 	useAppStateAwareFocusEffect(
 		React.useCallback(() => {
 			let active = true
-			setNewList(0)
-				;(async () => {
+				; (async () => {
 					try {
-						const conversationsClient = await ConversationsClient.create(userToken)
+						const conversationsClient = new ConversationsClient(userToken)
 						const conversationList = await conversationsClient.getSubscribedConversations()
 						conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+							let firstUpdateReason = ''
+							if (updateReasons.length > 0) {
+								firstUpdateReason = updateReasons[0]
+							}
 							let total = 0
 							if (conversation?._internalState?.uniqueName == user.data.email) {
-								total += await conversation.getUnreadMessagesCount()
-								setNewList(total)
+								try {
+									const unReadCount = await conversation.getUnreadMessagesCount()
+									total += unReadCount
+								} catch (error) {
+									console.log("Error getting messages count:", error)
+								}
 							}
+							if (firstUpdateReason !== 'lastReadMessageIndex') {
+								const n = new NotificationService()
+								n.localNotif("You have a new LimbLab message waiting for you")
+								PushNotification.setApplicationIconBadgeNumber(total)
+							}
+							setNewList(total)
 							// setConversations(conversation.getUnreadMessagesCount() || [])
 
 							// Fired when the attributes or the metadata of a conversation have been updated
@@ -103,40 +114,6 @@ export default ClientHomeScreen = (props) => {
 			}
 		}, [])
 	)
-
-	useEffect(() => {
-		PushNotification.configure({
-			// (optional) Called when Token is generated (iOS and Android)
-			onRegister: function (registration) {
-				const api = createAxiosInstance(userCode)
-				api.post(`/api/v1/${userRole}/devices`, {
-					device: {
-						token: registration.token,
-					},
-				})
-			},
-			// (required) Called when a remote is received or opened, or local notification is opened
-			onNotification: function (notification) {
-				// process the notification
-				// (required) Called when a remote is received or opened, or local notification is opened
-				notification.finish(PushNotificationIOS.FetchResult.NoData)
-			},
-			onAction: function (notification) {
-				// process the action
-			},
-			onRegistrationError: function (err) {
-				console.error(err.message, err)
-			},
-			permissions: {
-				alert: true,
-				badge: true,
-				sound: true,
-			},
-			popInitialNotification: true,
-			requestPermissions: true,
-		})
-		if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
-	}, [])
 
 	const bigFunction = async () => {
 		const api = createAxiosInstance(userCode)
@@ -504,6 +481,7 @@ const styles = StyleSheet.create({
 		height: 50,
 		justifyContent: "center",
 		alignItems: "center",
+		marginLeft: 15,
 	},
 	button1: {
 		backgroundColor: Colors.white,
