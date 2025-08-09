@@ -34,6 +34,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Modal from "react-native-modal"
 import ReactNativeBiometrics, { BiometryTypes } from "react-native-biometrics"
+import createAxiosInstance from "../utils/API"
 
 const LoginScreen = (props) => {
 	const [email, setEmail] = React.useState("")
@@ -84,7 +85,7 @@ const LoginScreen = (props) => {
 				setEnableBiometric(true)
 				LoginBiometricAuth()
 					.then((res) => {
-						login(res.username, res.password, () => loginCallback(res.username, res.password, true))
+						login(res.username, res.password, (loggedUserData) => loginCallback(res.username, res.password, true, loggedUserData))
 					})
 					.catch((e) => {
 						console.warn(e.toString())
@@ -103,7 +104,7 @@ const LoginScreen = (props) => {
 			LoginBiometricAuth()
 				.then((res) => {
 					console.log(res)
-					login(res.username, res.password, () => loginCallback(res.username, res.password, true))
+					login(res.username, res.password, (loggedUserData) => loginCallback(res.username, res.password, true, loggedUserData))
 				})
 				.catch((e) => {
 					console.warn(e.toString())
@@ -115,10 +116,10 @@ const LoginScreen = (props) => {
 		if (enableBiometric) {
 			setVisibleBiometricPopup(true)
 		} else {
-			login(email, password, () => loginCallback(email, password, enableBiometric))
+			login(email, password, (loggedUserData) => loginCallback(email, password, enableBiometric, loggedUserData))
 		}
 	}
-	const loginCallback = (email, password, enableBiometric) => {
+	const loginCallback = async (email, password, enableBiometric, loggedUserData) => {
 		if (!enableBiometric) {
 			AsyncStorage.setItem("biometricEnabled", "false")
 			console.warn("ider aya false ", enableBiometric)
@@ -127,6 +128,14 @@ const LoginScreen = (props) => {
 			AsyncStorage.setItem("biometricEnabled", "true")
 			AsyncStorage.setItem("isFirstOpen", "false")
 		}
+		
+		const api = createAxiosInstance(loggedUserData.api_token)
+		const dt = await AsyncStorage.getItem("deviceToken");
+		api.post(`/api/v1/${loggedUserData.role}/devices`, {
+			device: {
+				token: dt
+			}
+		})
 		SetUser(email, password)
 			.then((res) => {
 				console.warn(JSON.stringify(res))
@@ -144,7 +153,7 @@ const LoginScreen = (props) => {
 	}
 	const onOkPress = () => {
 		setVisibleBiometricPopup(false)
-		login(email, password, () => loginCallback(email, password, enableBiometric))
+		login(email, password, (loggedUserData) => loginCallback(email, password, enableBiometric, loggedUserData))
 	}
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>

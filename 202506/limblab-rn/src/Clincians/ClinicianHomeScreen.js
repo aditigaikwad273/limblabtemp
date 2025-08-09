@@ -28,6 +28,8 @@ import { Client as ConversationsClient } from "@twilio/conversations"
 import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-effect"
 import moment from "moment"
 import { set } from "react-native-reanimated"
+import NotificationService from '../utils/NotificationService';
+
 
 export default ClinicianHomeScreen = (props) => {
 	const { user, mainUser, setMainUser, logout, setSelectedClient } = useContext(AuthContext)
@@ -99,7 +101,7 @@ export default ClinicianHomeScreen = (props) => {
 				}
 			}
 
-			PushNotification.setApplicationIconBadgeNumber(total)
+			// PushNotification.setApplicationIconBadgeNumber(total)
 			setNewList(clientObj)
 		}
 
@@ -108,6 +110,10 @@ export default ClinicianHomeScreen = (props) => {
 	useEffect(() => {
 		if (!conversationsClient.current) return
 		conversationsClient.current.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+			let firstUpdateReason = ''
+			if (updateReasons.length > 0) {
+				firstUpdateReason = updateReasons[0]
+			}
 			let clientObj = []
 			let total = 0
 			for (let i = 0; i < conversations.length; i++) {
@@ -121,7 +127,11 @@ export default ClinicianHomeScreen = (props) => {
 				})
 			}
 
-			PushNotification.setApplicationIconBadgeNumber(total)
+			if (firstUpdateReason !== 'lastReadMessageIndex') {
+				const n = new NotificationService()
+				n.localNotif("You have a new LimbLab message waiting for you")
+				PushNotification.setApplicationIconBadgeNumber(total)
+			}
 
 			setNewList(clientObj)
 		})
@@ -131,12 +141,13 @@ export default ClinicianHomeScreen = (props) => {
 			let active = true
 			;(async () => {
 				try {
-					conversationsClient.current = await ConversationsClient.create(userToken)
-					// conversationsClient.conversations('CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX').remove();
-					const conversationList = await conversationsClient.current.getSubscribedConversations()
-
 					if (active) {
-						setConversations(conversationList.items || [])
+						const userSubscribedConv = new ConversationsClient(userToken)
+						conversationsClient.current = userSubscribedConv
+						userSubscribedConv.on("initialized", async () => {
+							const conversationList = await userSubscribedConv.getSubscribedConversations()
+							setConversations(conversationList.items || [])
+						})
 					}
 				} catch (e) {
 					console.log("this is an error", e)
@@ -170,39 +181,6 @@ export default ClinicianHomeScreen = (props) => {
 		}
 	}, [newList])
 
-	useEffect(() => {
-		PushNotification.configure({
-			// (optional) Called when Token is generated (iOS and Android)
-			onRegister: function (registration) {
-				const api = createAxiosInstance(userCode)
-				api.post(`/api/v1/${userRole}/devices`, {
-					device: {
-						token: registration.token,
-					},
-				})
-			},
-			// (required) Called when a remote is received or opened, or local notification is opened
-			onNotification: function (notification) {
-				// process the notification
-				// (required) Called when a remote is received or opened, or local notification is opened
-				notification.finish(PushNotificationIOS.FetchResult.NoData)
-			},
-			onAction: function (notification) {
-				// process the action
-			},
-			onRegistrationError: function (err) {
-				console.error(err.message, err)
-			},
-			permissions: {
-				alert: true,
-				badge: true,
-				sound: true,
-			},
-			popInitialNotification: true,
-			requestPermissions: true,
-		})
-		if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
-	}, [])
 
 	const getClientConvo = (info) => {
 		// setSelectedClient(info)
@@ -241,7 +219,7 @@ export default ClinicianHomeScreen = (props) => {
 							<ListItem.Title style={{ fontSize: 21 }}>{userLocation}</ListItem.Title>
 						</ListItem.Content>
 						<ListItem.Title style={{ fontSize: 21 }}>{client.unRead}</ListItem.Title>
-						<ListItem.Chevron size={26} />
+						<Icon size={26} name="chevron-right" type="feather" color={'gray'} />
 					</ListItem>
 				</TouchableOpacity>
 			</View>
@@ -257,8 +235,8 @@ export default ClinicianHomeScreen = (props) => {
 	}
 
 	return (
-		<Fragment>
-			<SafeAreaView style={{ backgroundColor: "white" }} />
+		// <Fragment>
+		<SafeAreaView style={{ backgroundColor: "white", flex: 1, paddingTop: Platform.OS == 'ios' ? 40 : 0 }}>
 			<View style={{ justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
 				<Image source={Images.logoBig} style={{ width: windowWidth * 0.8 }} />
 				<Text style={{ color: Colors.olive, marginTop: 10 }}>CLINICIAN PORTAL</Text>
@@ -306,7 +284,8 @@ export default ClinicianHomeScreen = (props) => {
 				)}
 				{List}
 			</ScrollView>
-		</Fragment>
+		</SafeAreaView>
+		// </Fragment>
 	)
 }
 

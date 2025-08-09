@@ -11,6 +11,7 @@ import {
 	TextInput,
 	Pressable,
 	TouchableOpacity,
+	KeyboardAvoidingView,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Styles, Colors, Images } from "../theme/Index"
@@ -37,6 +38,8 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker"
 import Video from "react-native-video"
 import VideoPlayer from "./VideoPlayer"
 import uuid from "react-native-uuid"
+import NotificationService from '../utils/NotificationService';
+
 export default MessageScreen = (props) => {
 	const { user, mainUser, setMainUser, logout } = useContext(AuthContext)
 	const route = useRoute()
@@ -52,6 +55,8 @@ export default MessageScreen = (props) => {
 	const [height, setHeight] = useState(16)
 	const [modalVisible, setModalVisible] = useState(false)
 	const [clinician, setClinician] = useState()
+	const [showImage, setShowImage] = useState(false)
+	const [selectedImage, setSelectedImage] = useState(null)
 
 	useEffect(() => {
 		if (userRole === "client") {
@@ -67,6 +72,8 @@ export default MessageScreen = (props) => {
 
 			fetchData()
 		}
+		const n = new NotificationService()
+		n.removeAllDeliveredNotifications()
 	}, [userRole])
 
 	const fetchData = async () => {
@@ -106,14 +113,6 @@ export default MessageScreen = (props) => {
 	useEffect(() => {
 		fetchData()
 	}, [sid])
-
-	useEffect(() => {
-		const intervalId = setInterval(() => {
-			fetchData()
-		}, 3000)
-
-		return () => clearInterval(intervalId)
-	}, [])
 
 	useEffect(() => {
 		if (tempMessages.length > messages.length) setMessages(tempMessages)
@@ -262,6 +261,27 @@ export default MessageScreen = (props) => {
 	//   }
 	// }
 
+	const renderMessageImage = (props) => {
+		const imageUrl = props.currentMessage.image;
+		if (!imageUrl) return null;
+		return (
+			<TouchableOpacity onPress={() => {
+				setShowImage(!showImage);
+				setSelectedImage(imageUrl);
+			}}>
+				<Image source={{ uri: imageUrl }}
+					style={{
+						width: 160,
+						height: 160,
+						borderRadius: 8,
+						margin: 3
+					}}
+					resizeMode="cover"
+				/>
+			</TouchableOpacity >
+		);
+	};
+
 	const renderBubble = (props) => {
 		const highlight = props.currentMessage.urgent === "1"
 
@@ -269,6 +289,7 @@ export default MessageScreen = (props) => {
 			<Bubble
 				{...props}
 				renderMessageText={renderMessageText}
+				renderMessageImage={renderMessageImage}
 				wrapperStyle={{
 					left: {
 						backgroundColor: highlight ? "#B54C84" : "white",
@@ -359,100 +380,106 @@ export default MessageScreen = (props) => {
 	// <InputToolbar {...props} containerStyle={{ padding: 5 }} />
 	return (
 		<>
-			<GiftedChat
-				bottomOffset={1}
-				isKeyboardInternallyHandled={true}
-				renderUsernameOnMessage={true}
-				messages={messages}
-				messagesContainerStyle={styles.messageContainer}
-				onSend={(messages) => onSend(messages)}
-				alwaysShowSend={true}
-				showAvatarForEveryMessage={true}
-				user={{
-					_id: user.data.email,
-					name: `${(user.data.firstName, user.data.lastName)}`,
-				}}
-				renderMessageVideo={(props) => {
-					return (
-						<VideoPlayer
-							url={props.currentMessage.video}
-							style={{
-								width: 200,
-								height: 200,
-								margin: 3,
-								borderRadius: 5,
-								overflow: "hidden",
-								backgroundColor: "black",
-							}}
-						/>
-					)
-				}}
-				renderSend={(props) => (
-					<Send
-						{...props}
-						containerStyle={{
-							width: 30,
-							height: 30,
-							bottom: 12,
-							right: 10,
-							justifyContent: "center",
-						}}
-					>
-						<Image source={Images.icnSend} />
-					</Send>
-				)}
-				renderComposer={renderComposer}
-				// renderInputToolbar={customInputToolbar}
-				renderActions={(props) => (
-					<View
-						style={{
-							flexDirection: "row",
-							alignItems: "center",
-							justifyContent: "center",
-						}}
-					>
-						<Actions
+			<KeyboardAvoidingView
+				style={{ flex: 1 }}
+				behavior={Platform.OS === "ios" ? "padding" : undefined}
+				keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} // adjust as needed
+			>
+				<GiftedChat
+					bottomOffset={1}
+					isKeyboardInternallyHandled={true}
+					renderUsernameOnMessage={true}
+					messages={messages}
+					messagesContainerStyle={styles.messageContainer}
+					onSend={(messages) => onSend(messages)}
+					alwaysShowSend={true}
+					showAvatarForEveryMessage={true}
+					user={{
+						_id: user.data.email,
+						name: `${(user.data.firstName, user.data.lastName)}`,
+					}}
+					renderMessageVideo={(props) => {
+						return (
+							<VideoPlayer
+								url={props.currentMessage.video}
+								style={{
+									width: 200,
+									height: 200,
+									margin: 3,
+									borderRadius: 5,
+									overflow: "hidden",
+									backgroundColor: "black",
+								}}
+							/>
+						)
+					}}
+					renderSend={(props) => (
+						<Send
 							{...props}
-							wrapperStyle={{ backgroundColor: "green" }}
 							containerStyle={{
-								paddingTop: 3,
-								margin: 5,
+								width: 30,
+								height: 30,
+								bottom: 12,
+								right: 10,
+								justifyContent: "center",
 							}}
-							icon={() => ({
-								...(urgency === "0" ? <Image source={Images.icnImportant} /> : <Image source={Images.icnImportant} />),
-							})}
-							options={{
-								URGENT: () => {
-									setUrgency("1")
+						>
+							<Image source={Images.icnSend} />
+						</Send>
+					)}
+					renderComposer={renderComposer}
+					// renderInputToolbar={customInputToolbar}
+					renderActions={(props) => (
+						<View
+							style={{
+								flexDirection: "row",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<Actions
+								{...props}
+								wrapperStyle={{ backgroundColor: "green" }}
+								containerStyle={{
+									paddingTop: 3,
+									margin: 5,
+								}}
+								icon={() => ({
+									...(urgency === "0" ? <Image source={Images.icnImportant} /> : <Image source={Images.icnImportant} />),
+								})}
+								options={{
+									URGENT: () => {
+										setUrgency("1")
+									},
+									Cancel: () => {
+										setUrgency("0")
+									},
+								}}
+							/>
+							<TouchableOpacity style={{ margin: 5 }} onPress={openCamera}>
+								<Image source={Images.icnCamera} />
+							</TouchableOpacity>
+							<TouchableOpacity style={{ margin: 5, paddingTop: 4 }} onPress={openPicker}>
+								<Image source={Images.icnPhoto} />
+							</TouchableOpacity>
+						</View>
+					)}
+					renderMessage={(props) => (
+						<Message
+							{...props}
+							containerStyle={{
+								right: {
+									marginBottom: image?.uri ? 170 : 50,
 								},
-								Cancel: () => {
-									setUrgency("0")
+								left: {
+									marginBottom: image?.uri ? 170 : 50,
 								},
 							}}
+							renderBubble={renderBubble}
 						/>
-						<TouchableOpacity style={{ margin: 5 }} onPress={openCamera}>
-							<Image source={Images.icnCamera} />
-						</TouchableOpacity>
-						<TouchableOpacity style={{ margin: 5, paddingTop: 4 }} onPress={openPicker}>
-							<Image source={Images.icnPhoto} />
-						</TouchableOpacity>
-					</View>
-				)}
-				renderMessage={(props) => (
-					<Message
-						{...props}
-						containerStyle={{
-							right: {
-								marginBottom: image?.uri ? 170 : 50,
-							},
-							left: {
-								marginBottom: image?.uri ? 170 : 50,
-							},
-						}}
-						renderBubble={renderBubble}
-					/>
-				)}
-			/>
+					)}
+				/>
+			</KeyboardAvoidingView>
 			<Modal
 				style={{ margin: 0 }}
 				animationType="slide"
@@ -496,6 +523,20 @@ export default MessageScreen = (props) => {
 					</View>
 				</View>
 			</Modal>
+
+			<Modal visible={showImage} style={{ margin: 0 }} animationType="slide" transparent={false} onRequestClose={() => { setShowImage(false); setSelectedImage(null) }}>
+				<View style={{ flex: 1, backgroundColor: 'black', width: '100%', height: '100%', padding: 20 }}>
+					<TouchableOpacity style={{ alignSelf: 'flex-end', marginTop: 50 }} onPress={() => { setShowImage(false); setSelectedImage(null) }}>
+						<Text style={{ color: 'white', fontSize: 20 }} >Close</Text>
+					</TouchableOpacity>
+
+					<Image source={{ uri: selectedImage }}
+						style={{ width: '100%', height: '100%' }}
+						resizeMode="contain"
+					/>
+				</View>
+			</Modal>
+
 		</>
 	)
 }

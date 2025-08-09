@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react"
 import { View, StyleSheet, Text, Dimensions, TouchableOpacity, Image, Pressable, Linking } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Styles, Colors, Images } from "../theme/Index"
-import { ListItem } from "react-native-elements"
+import { ListItem, Icon as EIcon } from "react-native-elements"
 import Modal from "react-native-modal"
 import { RFValue } from "react-native-responsive-fontsize"
 import { useNavigation } from "@react-navigation/native"
@@ -130,7 +130,7 @@ export default ResourcesScreen = (props) => {
 							<ListItem.Content>
 								<ListItem.Title style={{ textAlign: "left", paddingLeft: 0 }}>{item.title}</ListItem.Title>
 							</ListItem.Content>
-							<ListItem.Chevron size={26} />
+							<EIcon size={26} name="chevron-right" type="feather" color={'gray'} />
 						</ListItem>
 					</TouchableOpacity>
 				))}
@@ -140,7 +140,7 @@ export default ResourcesScreen = (props) => {
 							<ListItem.Content>
 								<ListItem.Title style={{ textAlign: "left", paddingLeft: 0 }}>{item.title}</ListItem.Title>
 							</ListItem.Content>
-							<ListItem.Chevron size={26} />
+							<EIcon size={26} name="chevron-right" type="feather" color={'gray'} />
 						</ListItem>
 					</TouchableOpacity>
 				))}
