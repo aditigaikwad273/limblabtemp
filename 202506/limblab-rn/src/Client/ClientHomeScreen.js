@@ -92,9 +92,13 @@ export default ClientHomeScreen = (props) => {
 							}							
 						}
 						if (firstUpdateReason !== 'lastReadMessageIndex') {
-							const n = new NotificationService()
-							n.localNotif("You have a new LimbLab message waiting for you")
-							PushNotification.setApplicationIconBadgeNumber(total)
+							const latestMessagr = await conversation?.getMessages(1)
+							const authorParticipant = await latestMessagr.items[0].getParticipant()
+							if (authorParticipant.identity !== user.data.email) {
+								const n = new NotificationService()
+								n.localNotif("You have a new LimbLab message waiting for you")
+								PushNotification.setApplicationIconBadgeNumber(total)	
+							}
 						}
 						setNewList(total)
 						// setConversations(conversation.getUnreadMessagesCount() || [])
