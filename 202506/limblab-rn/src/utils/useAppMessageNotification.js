@@ -14,12 +14,12 @@ const useAppMessageNotification = () => {
     const userEmailRef = useRef(null)
 
     const twilioConversationClientOnConversationUpdate = useCallback(async (conversation, updateReasons) => {
-        let firstUpdateReason = ''
+        /*let firstUpdateReason = ''
         if (updateReasons.length > 0) {
             firstUpdateReason = updateReasons[0]
-        }
+        }*/
 			
-        if (firstUpdateReason !== 'lastReadMessageIndex') {
+        //if (firstUpdateReason !== 'lastReadMessageIndex') {
             const latestMessagr = await conversation?.getMessages(1)
             const authorParticipant = await latestMessagr.items[0].getParticipant()
             if (authorParticipant.identity !== userEmailRef.current) {
@@ -29,8 +29,13 @@ const useAppMessageNotification = () => {
                 total += withUnRead
                 totalUnReadMessagesRef.current = total
                 console.log("Updating Badge Count:", total)
+
+                const n = new NotificationService()
+                n.badgeCountUpdateOnlyNotif()
+                PushNotification.setApplicationIconBadgeNumber(total)
+                setConversationSID(null)//this so that now we can take up any further changes 
             }
-        }
+        //}
     }, [conversationSID])
 
     useEffect(() => {
@@ -93,11 +98,8 @@ const useAppMessageNotification = () => {
         userEmailRef.current = ue
     }
 
-    const pushUnReaMessagesCountNotificationOnConversationUpdate = (conversationSID) => {
-        setConversationSID(deviceToken)
-        const n = new NotificationService()
-        n.localNotif()
-        PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+    const pushUnReaMessagesCountNotificationOnConversationUpdate = (convSID) => {
+        setConversationSID(convSID)
     }
 
     return {pushUnReaMessagesCountNotificationOnLogin

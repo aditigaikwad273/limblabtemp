@@ -78,10 +78,10 @@ export default ClientHomeScreen = (props) => {
 					const conversationsClient = new ConversationsClient(userToken)
 					const conversationList = await conversationsClient.getSubscribedConversations()
 					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
-						let firstUpdateReason = ''
+						/*let firstUpdateReason = ''
 						if (updateReasons.length > 0) {
 							firstUpdateReason = updateReasons[0]
-						}
+						}*/
 						let total = 0
 						if (conversation?._internalState?.uniqueName == user.data.email) {
 							try {
@@ -91,15 +91,15 @@ export default ClientHomeScreen = (props) => {
 								console.log("Error getting messages count:", error)
 							}							
 						}
-						if (firstUpdateReason !== 'lastReadMessageIndex') {
+						/*if (firstUpdateReason !== 'lastReadMessageIndex') {
 							const latestMessagr = await conversation?.getMessages(1)
 							const authorParticipant = await latestMessagr.items[0].getParticipant()
 							if (authorParticipant.identity !== user.data.email) {
 								const n = new NotificationService()
-								n.localNotif("You have a new LimbLab message waiting for you")
+								n.badgeCountUpdateOnlyNotif("You have a new LimbLab message waiting for you")
 								PushNotification.setApplicationIconBadgeNumber(total)	
 							}
-						}
+						}*/
 						setNewList(total)
 						// setConversations(conversation.getUnreadMessagesCount() || [])
 

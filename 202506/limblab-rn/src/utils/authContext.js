@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react"
+import React, { createContext, useState, useEffect } from "react"
 
 import createAxiosInstance from "./API"
 import { useNavigation } from "@react-navigation/native"
@@ -6,6 +6,8 @@ export const AuthContext = createContext({})
 import analytics from "@react-native-firebase/analytics"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { Alert } from "react-native"
+import useAppMessageNotification from "./useAppMessageNotification"
+import messaging from '@react-native-firebase/messaging';
 const storeData = async (value) => {
 	try {
 		const jsonValue = JSON.stringify(value)
@@ -20,6 +22,23 @@ export const AuthProvider = ({ children }) => {
 	const [clientNotes, setClientNotes] = useState(null)
 	const [clinicianCode, setClinicianCode] = useState(null)
 	const [noClinician, setNoClinician] = useState(false)
+	const {pushUnReaMessagesCountNotificationOnLogin,
+		pushUnReaMessagesCountNotificationOnConversationUpdate
+	} = useAppMessageNotification()
+
+	useEffect(() => {
+	const unsubscribe = messaging().onMessage(async remoteMessage => {
+			pushUnReaMessagesCountNotificationOnConversationUpdate('CHa7b258e778004c24bb59d4d5cc260e74')//temporay
+		});
+
+		// Background/Killed state messages
+		messaging().setBackgroundMessageHandler(async remoteMessage => {
+			console.log('Message received in background/killed:', remoteMessage);
+			pushUnReaMessagesCountNotificationOnConversationUpdate('CHa7b258e778004c24bb59d4d5cc260e74')//temporay
+		});
+
+		return unsubscribe;
+	}, []);
 
 	const api = createAxiosInstance()
 
@@ -49,6 +68,7 @@ export const AuthProvider = ({ children }) => {
 							}
 							if (typeof props === "function") {
 								// console.warn("props", props)
+								pushUnReaMessagesCountNotificationOnLogin(data.data.twilio_token, email)
 								props(data.data)
 							}
 						})
