@@ -28,9 +28,10 @@ const useAppMessageNotification = () => {
                 total -= conversationUnreadCounts.current[conversation.sid] || 0
                 total += withUnRead
                 totalUnReadMessagesRef.current = total
-                console.log("Updating Badge Count:", total)
 
                 const n = new NotificationService()
+                n.removeAllDeliveredNotifications()
+                PushNotification.setApplicationIconBadgeNumber(0)
                 n.badgeCountUpdateOnlyNotif()
                 PushNotification.setApplicationIconBadgeNumber(total)
                 setConversationSID(null)//this so that now we can take up any further changes 
@@ -72,6 +73,8 @@ const useAppMessageNotification = () => {
                 totalUnReadMessagesRef.current = totalUnReadMessages
 
                 const n = new NotificationService()
+                n.removeAllDeliveredNotifications()
+                PushNotification.setApplicationIconBadgeNumber(0)
                 n.badgeCountUpdateOnlyNotif()
                 PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
                 conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)

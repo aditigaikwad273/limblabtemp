@@ -28,13 +28,13 @@ export const AuthProvider = ({ children }) => {
 
 	useEffect(() => {
 	const unsubscribe = messaging().onMessage(async remoteMessage => {
-			pushUnReaMessagesCountNotificationOnConversationUpdate('CHa7b258e778004c24bb59d4d5cc260e74')//temporay
+			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID)
 		});
 
 		// Background/Killed state messages
 		messaging().setBackgroundMessageHandler(async remoteMessage => {
 			console.log('Message received in background/killed:', remoteMessage);
-			pushUnReaMessagesCountNotificationOnConversationUpdate('CHa7b258e778004c24bb59d4d5cc260e74')//temporay
+			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID)
 		});
 
 		return unsubscribe;
