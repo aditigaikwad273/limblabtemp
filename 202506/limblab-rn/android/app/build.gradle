@@ -84,7 +84,7 @@ android {
         applicationId "com.limblab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 7
         versionName "2.0.0"
         multiDexEnabled true
     }
