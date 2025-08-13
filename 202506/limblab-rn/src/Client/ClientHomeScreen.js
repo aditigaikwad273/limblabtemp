@@ -73,41 +73,45 @@ export default ClientHomeScreen = (props) => {
 	useAppStateAwareFocusEffect(
 		React.useCallback(() => {
 			let active = true
-				; (async () => {
-					try {
-						const conversationsClient = new ConversationsClient(userToken)
-						const conversationList = await conversationsClient.getSubscribedConversations()
-						conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
-							let firstUpdateReason = ''
-							if (updateReasons.length > 0) {
-								firstUpdateReason = updateReasons[0]
-							}
-							let total = 0
-							if (conversation?._internalState?.uniqueName == user.data.email) {
-								try {
-									const unReadCount = await conversation.getUnreadMessagesCount()
-									total += unReadCount
-								} catch (error) {
-									console.log("Error getting messages count:", error)
-								}
-							}
-							if (firstUpdateReason !== 'lastReadMessageIndex') {
-								const n = new NotificationService()
-								n.localNotif("You have a new LimbLab message waiting for you")
-								PushNotification.setApplicationIconBadgeNumber(total)
-							}
-							setNewList(total)
-							// setConversations(conversation.getUnreadMessagesCount() || [])
-
-							// Fired when the attributes or the metadata of a conversation have been updated
-						})
-						if (active) {
-							setConversations(conversationList.items || [])
+			; (async () => {
+				try {
+					const conversationsClient = new ConversationsClient(userToken)
+					const conversationList = await conversationsClient.getSubscribedConversations()
+					conversationsClient.on("conversationUpdated", async ({ conversation, updateReasons }) => {
+						/*let firstUpdateReason = ''
+						if (updateReasons.length > 0) {
+							firstUpdateReason = updateReasons[0]
+						}*/
+						let total = 0
+						if (conversation?._internalState?.uniqueName == user.data.email) {
+							try {
+								const unReadCount = await conversation.getUnreadMessagesCount()
+								total += unReadCount
+							} catch (error) {
+								console.log("Error getting messages count:", error)
+							}							
 						}
-					} catch (e) {
-						console.log("this is an error", e)
+						/*if (firstUpdateReason !== 'lastReadMessageIndex') {
+							const latestMessagr = await conversation?.getMessages(1)
+							const authorParticipant = await latestMessagr.items[0].getParticipant()
+							if (authorParticipant.identity !== user.data.email) {
+								const n = new NotificationService()
+								n.badgeCountUpdateOnlyNotif("You have a new LimbLab message waiting for you")
+								PushNotification.setApplicationIconBadgeNumber(total)	
+							}
+						}*/
+						setNewList(total)
+						// setConversations(conversation.getUnreadMessagesCount() || [])
+
+						// Fired when the attributes or the metadata of a conversation have been updated
+					})
+					if (active) {
+						setConversations(conversationList.items || [])
 					}
-				})()
+				} catch (e) {
+					console.log("this is an error", e)
+				}
+			})()
 
 			return () => {
 				active = false
@@ -332,12 +336,12 @@ export default ClientHomeScreen = (props) => {
 							/>
 							<View style={{ paddingVertical: 15 }}>
 								<View style={{ paddingHorizontal: 15 }} >
-									<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 18, color: Colors.olive }}>
-										YOUR OFFICE
-									</Text>
-									<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 28, marginBottom: 20 }}>
-										{officeLocation}
-									</Text>
+								<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 18, color: Colors.olive }}>
+									YOUR OFFICE
+								</Text>
+								<Text style={{ ...Styles.boldFont, marginBottom: 10, fontSize: 28, marginBottom: 20 }}>
+									{officeLocation}
+								</Text>
 								</View>
 								<View style={{ flexDirection: "row", justifyContent: 'space-between', paddingHorizontal: 6 }}>
 									<Pressable style={styles.button1} onPress={openOffice}>

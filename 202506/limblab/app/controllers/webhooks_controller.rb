@@ -28,7 +28,7 @@ class WebhooksController < ApplicationController
             puts invalid.record.errors
         end
 
-        MessageNotifyJob.perform_later(message)
+        MessageNotifyJob.perform_later(message, params[:ConversationSid])
         
         if urgency > 0
           MessageUrgencyJob.set(wait: 1.hour).perform_later(message)

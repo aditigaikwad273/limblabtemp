@@ -110,10 +110,10 @@ export default ClinicianHomeScreen = (props) => {
 	useEffect(() => {
 		if (!conversationsClient.current) return
 		conversationsClient.current.on("conversationUpdated", async ({ conversation, updateReasons }) => {
-			let firstUpdateReason = ''
+			/*let firstUpdateReason = ''
 			if (updateReasons.length > 0) {
 				firstUpdateReason = updateReasons[0]
-			}
+			}*/
 			let clientObj = []
 			let total = 0
 			for (let i = 0; i < conversations.length; i++) {
@@ -126,12 +126,16 @@ export default ClinicianHomeScreen = (props) => {
 					unRead: withUnRead,
 				})
 			}
-
+/*
 			if (firstUpdateReason !== 'lastReadMessageIndex') {
-				const n = new NotificationService()
-				n.localNotif("You have a new LimbLab message waiting for you")
-				PushNotification.setApplicationIconBadgeNumber(total)
-			}
+				const latestMessagr = await conversation?.getMessages(1)
+				const authorParticipant = await latestMessagr.items[0].getParticipant()
+				if (authorParticipant.identity !== user.data.email) {
+					const n = new NotificationService()
+					n.badgeCountUpdateOnlyNotif()
+					PushNotification.setApplicationIconBadgeNumber(total)	
+				}
+			}*/
 
 			setNewList(clientObj)
 		})
