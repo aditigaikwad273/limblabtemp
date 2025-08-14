@@ -12,6 +12,8 @@ const useAppMessageNotification = () => {
     const [deviceToken, setDeviceToken] = useState(null)
     const [conversationSID, setConversationSID] = useState(null)
     const userEmailRef = useRef(null)
+    const [isAppInFocus, setIsAppInFocus] = useState(true)
+    const [refreshNewCount, setRefreshNewCount] = useState(false)
 
     const twilioConversationClientOnConversationUpdate = useCallback(async (conversation, updateReasons) => {
         /*let firstUpdateReason = ''
@@ -32,12 +34,22 @@ const useAppMessageNotification = () => {
                 const n = new NotificationService()
                 n.removeAllDeliveredNotifications()
                 PushNotification.setApplicationIconBadgeNumber(0)
-                n.badgeCountUpdateOnlyNotif()
-                PushNotification.setApplicationIconBadgeNumber(total)
-                setConversationSID(null)//this so that now we can take up any further changes 
+                if (!isAppInFocus) {
+                    setRefreshNewCount(true)
+                    setConversationSID(null)//this so that now we can take up any further changes 
+                }
+                else{
+                    setRefreshNewCount(false)
+                }
             }
         //}
-    }, [conversationSID])
+    }, [conversationSID, isAppInFocus])
+
+    useEffect(() => {
+        const n = new NotificationService()
+        n.badgeCountUpdateOnlyNotif()
+        PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+    }, [refreshNewCount])
 
     useEffect(() => {
         if (conversationClient.current && conversationSID) {
@@ -101,8 +113,9 @@ const useAppMessageNotification = () => {
         userEmailRef.current = ue
     }
 
-    const pushUnReaMessagesCountNotificationOnConversationUpdate = (convSID) => {
+    const pushUnReaMessagesCountNotificationOnConversationUpdate = (convSID, isAppFocussed) => {
         setConversationSID(convSID)
+        setIsAppInFocus(isAppFocussed)
     }
 
     return {pushUnReaMessagesCountNotificationOnLogin

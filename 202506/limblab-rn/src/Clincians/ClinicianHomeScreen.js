@@ -28,7 +28,7 @@ import { Client as ConversationsClient } from "@twilio/conversations"
 import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-effect"
 import moment from "moment"
 import { set } from "react-native-reanimated"
-import NotificationService from '../utils/NotificationService';
+// import NotificationService from '../utils/NotificationService';
 
 
 export default ClinicianHomeScreen = (props) => {
