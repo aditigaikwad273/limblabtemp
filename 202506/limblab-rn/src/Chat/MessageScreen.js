@@ -191,20 +191,23 @@ export default MessageScreen = (props) => {
 					?.prepareMessage()
 					.setBody("")
 					.addMedia(formData)
+					.setAttributes({ urgency: urgency })
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
 					})
 			} else {
-				conversation
+				await conversation
+				?.sendMessage(newMessages[0].text, { urgency: urgency})
+				/*conversation
 					?.prepareMessage()
 					.setBody(newMessages[0]?.text)
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
-					})
+					})*/
 			}
 			if (userRole === "client")
 				analytics().logEvent("client_message_sent", { clinician: `${clinician?.first_name} ${clinician?.last_name}` })
