@@ -12,11 +12,11 @@ export default class NotificationService {
     NotificationHandler.attachNotification(onNotification);
 
     // Clear badge number at start
-    PushNotification.getApplicationIconBadgeNumber(function (number) {
+    /*PushNotification.getApplicationIconBadgeNumber(function (number) {
       if (number > 0) {
         PushNotification.setApplicationIconBadgeNumber(0);
       }
-    });
+    });*/
     
     PushNotification.getChannels(function(channels) {
       console.log(channels);

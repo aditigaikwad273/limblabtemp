@@ -29,7 +29,7 @@ import PushNotification from "react-native-push-notification"
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
-import NotificationService from '../utils/NotificationService';
+//import NotificationService from '../utils/NotificationService';
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
 
