@@ -23,7 +23,8 @@ export const AuthProvider = ({ children }) => {
 	const [clinicianCode, setClinicianCode] = useState(null)
 	const [noClinician, setNoClinician] = useState(false)
 	const {pushUnReaMessagesCountNotificationOnLogin,
-		pushUnReaMessagesCountNotificationOnConversationUpdate
+		pushUnReaMessagesCountNotificationOnConversationUpdate,
+		markConversationRead
 	} = useAppMessageNotification()
 
 	useEffect(() => {
@@ -55,6 +56,8 @@ export const AuthProvider = ({ children }) => {
 				setClinicianCode,
 				noClinician,
 				setNoClinician,
+				pushUnReaMessagesCountNotificationOnLogin,
+				markConversationRead,
 				login: (email, password, props, autoLogin = false, silent = false) => {
 					api
 						.post("/api/v1/sessions", { email, password })
@@ -67,7 +70,6 @@ export const AuthProvider = ({ children }) => {
 							}
 							if (typeof props === "function") {
 								// console.warn("props", props)
-								pushUnReaMessagesCountNotificationOnLogin(data.data.twilio_token, email)
 								props(data.data)
 							}
 						})
