@@ -11,6 +11,7 @@ const useAppMessageNotification = () => {
     const [conversationSID, setConversationSID] = useState('')
     const [isAppInFocus, setIsAppInFocus] = useState(true)
     const [refreshNewCount, setRefreshNewCount] = useState(false)
+    const [dummyCounter, setDummyCounter] = useState(0.5)//dumycounter to track every time app gets focus
 
     useEffect(() => {
         if (conversationSID === '') {
@@ -85,9 +86,26 @@ const useAppMessageNotification = () => {
 
     }, [conversationSID])
 */
+    useEffect(() => {        
+        if (deviceToken && deviceToken !== '') {
+            console.log("Setting up Twilio Conversations client with device token:")
+            setDummyCounter(0);//reset on login
+            conversationClient.current = new ConversationsClient(deviceToken)
+            //userSubscribedConv.on("initialized", twilioConversationClientOnInit)
+        }
+        /*
+        return () => {
+            if (conversationClient.current) {
+                conversationClient.current.off("initialized", twilioConversationClientOnInit)
+                //conversationClient.current.off("conversationUpdated", twilioConversationClientOnConversationUpdate)
+            }
+        }*/
+    }, [deviceToken])
+
     useEffect(() => {
         const twilioConversationClientOnInit = async () => {
             if (conversationClient.current){
+                console.log("Refreshing badge count on focus:")
                 let totalUnReadMessages = 0
                 const conversationList = await conversationClient.current.getSubscribedConversations()
                 while(1){
@@ -116,24 +134,14 @@ const useAppMessageNotification = () => {
                 //conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)
             }        
         }
-        
-        if (deviceToken && deviceToken !== '') {
-            const userSubscribedConv = new ConversationsClient(deviceToken)
-            conversationClient.current = userSubscribedConv
-            userSubscribedConv.on("initialized", twilioConversationClientOnInit)
-        }
 
-        return () => {
-            if (conversationClient.current) {
-                conversationClient.current.off("initialized", twilioConversationClientOnInit)
-                //conversationClient.current.off("conversationUpdated", twilioConversationClientOnConversationUpdate)
-            }
-        }
-    }, [deviceToken])
+        twilioConversationClientOnInit()
+    }, [dummyCounter])
 
     const pushUnReaMessagesCountNotificationOnLogin = (dt) => {
         //deviceToken.current = deviceToken
         setDeviceToken(dt)
+        setDummyCounter(prevVal => prevVal + 0.5) // Increment to trigger re-render
         console.log("Device token set in pushUnReaMessagesCountNotificationOnLogin:")
         //userEmailRef.current = ue
     }

@@ -278,7 +278,6 @@ export const MainStack = () => {
 			let active = true
 			;(async () => {
 				console.log("Refreshing badge counts")
-				pushUnReaMessagesCountNotificationOnLogin('')//to reset token
 				pushUnReaMessagesCountNotificationOnLogin(user.data?.twilio_token)
 			})()
 
