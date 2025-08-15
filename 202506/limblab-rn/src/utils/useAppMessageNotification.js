@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react"
 import { Client as ConversationsClient } from "@twilio/conversations"
 import NotificationService from './NotificationService';
 import PushNotification from "react-native-push-notification"
+import { Platform } from 'react-native'
 
 const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
@@ -11,7 +12,8 @@ const useAppMessageNotification = () => {
     const [conversationSID, setConversationSID] = useState('')
     const [isAppInFocus, setIsAppInFocus] = useState(true)
     const [refreshNewCount, setRefreshNewCount] = useState(false)
-    const [dummyCounter, setDummyCounter] = useState(0.5)//dumycounter to track every time app gets focus
+    const [dummyCounter, setDummyCounter] = useState(0)//dumycounter to track every time app gets focus
+    const androidOSName = 'android'
 
     useEffect(() => {
         if (conversationSID === '') {
@@ -44,9 +46,12 @@ const useAppMessageNotification = () => {
                 totalUnReadMessagesRef.current = total
                 console.log("Unread messages overall:", totalUnReadMessagesRef.current)
                 
-                const n = new NotificationService()
-                n.removeAllDeliveredNotifications()
-                PushNotification.setApplicationIconBadgeNumber(0)
+                if (Platform.OS === androidOSName) {
+                    const n = new NotificationService()
+                    n.removeAllDeliveredNotifications()
+                    PushNotification.setApplicationIconBadgeNumber(0)
+                }
+                
                 console.log("Cleared badge count to 0 in twilioConversationClientOnConversationUpdate")
                 setRefreshNewCount(true)
                 setConversationSID('')                    
@@ -56,13 +61,16 @@ const useAppMessageNotification = () => {
 
     useEffect(() => {
         if (refreshNewCount) {
-            const n = new NotificationService()
-            if (!isAppInFocus) {
-                n.localNotif('You have a new LimbLab message waiting for you')
+            if (Platform.OS === androidOSName) {
+                const n = new NotificationService()
+                if (!isAppInFocus) {
+                    n.localNotif('You have a new LimbLab message waiting for you')
+                }
+                else{
+                    n.badgeCountUpdateOnlyNotif()
+                }
             }
-            else{
-                n.badgeCountUpdateOnlyNotif()
-            }
+            
             console.log("badge count setting to: ", totalUnReadMessagesRef.current)
             PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
             setRefreshNewCount(false)
@@ -125,10 +133,14 @@ const useAppMessageNotification = () => {
                 totalUnReadMessagesRef.current = totalUnReadMessages
 
                 const n = new NotificationService()
-                n.removeAllDeliveredNotifications()
-                PushNotification.setApplicationIconBadgeNumber(0)
+                if (dummyCounter === 0) {
+                    n.removeAllDeliveredNotifications()
+                    PushNotification.setApplicationIconBadgeNumber(0)
+                }
                 if (totalUnReadMessages > 0) {
-                    n.badgeCountUpdateOnlyNotif()
+                    if (Platform.OS === androidOSName) {
+                        n.badgeCountUpdateOnlyNotif()
+                    }
                     PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
                 }
                 //conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)
