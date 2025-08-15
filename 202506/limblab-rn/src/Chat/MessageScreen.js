@@ -194,16 +194,15 @@ export default MessageScreen = (props) => {
 						conversation?.updateLastReadMessageIndex(index)
 					})
 			} else {
-				await conversation
-				?.sendMessage(newMessages[0].text, { urgency: urgency})
-				/*conversation
+				conversation
 					?.prepareMessage()
 					.setBody(newMessages[0]?.text)
+					.setAttributes({ urgency: urgency })
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
-					})*/
+					})
 			}
 			if (userRole === "client")
 				analytics().logEvent("client_message_sent", { clinician: `${clinician?.first_name} ${clinician?.last_name}` })
