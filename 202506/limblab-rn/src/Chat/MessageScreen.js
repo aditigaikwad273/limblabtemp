@@ -37,10 +37,9 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker"
 import Video from "react-native-video"
 import VideoPlayer from "./VideoPlayer"
 import uuid from "react-native-uuid"
-import NotificationService from '../utils/NotificationService';
 
 export default MessageScreen = (props) => {
-	const { user, mainUser, setMainUser, logout } = useContext(AuthContext)
+	const { user, mainUser, setMainUser, logout, markConversationRead } = useContext(AuthContext)
 	const route = useRoute()
 	const sid = route.params?.sid
 	const userCode = user?.data?.api_token
@@ -70,8 +69,6 @@ export default MessageScreen = (props) => {
 			fetchData()
 		}
 
-		const n = new NotificationService()
-		n.removeAllDeliveredNotifications()
 	}, [userRole])
 
 	const fetchData = async () => {
@@ -110,6 +107,7 @@ export default MessageScreen = (props) => {
 
 	useEffect(() => {
 		fetchData()
+		markConversationRead(sid)
 	}, [sid])
 
 	useEffect(() => {
