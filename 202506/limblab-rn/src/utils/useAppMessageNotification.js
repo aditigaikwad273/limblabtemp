@@ -7,61 +7,74 @@ const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
     const conversationUnreadCounts = useRef({})
     const conversationClient = useRef(null)
-    /*const deviceToken = useRef(null)
-    const conversationSID = useRef(null)*/
     const [deviceToken, setDeviceToken] = useState(null)
-    const [conversationSID, setConversationSID] = useState(null)
-    const userEmailRef = useRef(null)
+    const [conversationSID, setConversationSID] = useState('')
     const [isAppInFocus, setIsAppInFocus] = useState(true)
     const [refreshNewCount, setRefreshNewCount] = useState(false)
+    const [dummyCounter, setDummyCounter] = useState(0.5)//dumycounter to track every time app gets focus
 
-    const twilioConversationClientOnConversationUpdate = useCallback(async (conversation, updateReasons) => {
+    useEffect(() => {
+        if (conversationSID === '') {
+            return
+        }
         /*let firstUpdateReason = ''
         if (updateReasons.length > 0) {
             firstUpdateReason = updateReasons[0]
         }*/
-			
+            
         //if (firstUpdateReason !== 'lastReadMessageIndex') {
-            const latestMessagr = await conversation?.getMessages(1)
-            const authorParticipant = await latestMessagr.items[0].getParticipant()
-            if (authorParticipant.identity !== userEmailRef.current) {
+            //const latestMessagr = await conversation?.getMessages(1)
+            //console.log("Latest message in conversation:", latestMessagr)
+            //const authorParticipant = await latestMessagr.items[0].getParticipant()
+            //console.log("Participant author in conversation:", authorParticipant)
+            //if (authorParticipant.identity !== userEmailRef.current) {
                 let total = totalUnReadMessagesRef.current
-                const withUnRead = await conversation.getUnreadMessagesCount()
-                total -= conversationUnreadCounts.current[conversation.sid] || 0
-                total += withUnRead
-                totalUnReadMessagesRef.current = total
+                total += 1
 
+                //const withUnRead = await conversation.getUnreadMessagesCount()
+                //total -= conversationUnreadCounts.current[conversation.sid] || 0
+                //total += withUnRead
+                conversationUnreadCounts.current[conversationSID] += 1
+                totalUnReadMessagesRef.current = total
+                
                 const n = new NotificationService()
                 n.removeAllDeliveredNotifications()
                 PushNotification.setApplicationIconBadgeNumber(0)
-                if (!isAppInFocus) {
-                    setRefreshNewCount(true)
-                    setConversationSID(null)//this so that now we can take up any further changes 
-                }
-                else{
-                    setRefreshNewCount(false)
-                }
-            }
+                setRefreshNewCount(true)
+                setConversationSID('')                    
+            //}
         //}
-    }, [conversationSID, isAppInFocus])
+    }, [conversationSID])
 
     useEffect(() => {
-        const n = new NotificationService()
-        n.badgeCountUpdateOnlyNotif()
-        PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+        if (refreshNewCount) {
+            const n = new NotificationService()
+            if (!isAppInFocus) {
+                n.localNotif('You have a new LimbLab message waiting for you')
+            }
+            else{
+                n.badgeCountUpdateOnlyNotif()
+            }
+            PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+            setRefreshNewCount(false)
+        }
+        
     }, [refreshNewCount])
 
-    useEffect(() => {
-        if (conversationClient.current && conversationSID) {
-            conversationClient.current.getConversationBySid(conversationSID)
-                .then(conversation => {
-                    twilioConversationClientOnConversationUpdate(conversation, ['lastReadMessageIndex'])
-                })
-                .catch(error => {
-                    console.error("Error fetching conversation:", error)
-                })
+    useEffect(() => {        
+        if (deviceToken && deviceToken !== '') {
+            setDummyCounter(0);//reset on login
+            conversationClient.current = new ConversationsClient(deviceToken)
+            //userSubscribedConv.on("initialized", twilioConversationClientOnInit)
         }
-    }, [twilioConversationClientOnConversationUpdate])
+        /*
+        return () => {
+            if (conversationClient.current) {
+                conversationClient.current.off("initialized", twilioConversationClientOnInit)
+                //conversationClient.current.off("conversationUpdated", twilioConversationClientOnConversationUpdate)
+            }
+        }*/
+    }, [deviceToken])
 
     useEffect(() => {
         const twilioConversationClientOnInit = async () => {
@@ -72,7 +85,7 @@ const useAppMessageNotification = () => {
                     for (let i = 0; i < conversationList.items.length; i++) {
                         const item = conversationList.items[i]
                         const withUnRead = await item.getUnreadMessagesCount()
-                        conversationUnreadCounts.current[item.sid] = withUnRead
+                        conversationUnreadCounts.current[item.sid] = withUnRead || 0
                         totalUnReadMessages += withUnRead
                     }
                     if (conversationList.hasNextPage) {
@@ -87,30 +100,22 @@ const useAppMessageNotification = () => {
                 const n = new NotificationService()
                 n.removeAllDeliveredNotifications()
                 PushNotification.setApplicationIconBadgeNumber(0)
-                n.badgeCountUpdateOnlyNotif()
-                PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
-                conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)
+                if (totalUnReadMessages > 0) {
+                    n.badgeCountUpdateOnlyNotif()
+                    PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
+                }
+                //conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)
             }        
         }
-        
-        if (deviceToken) {
-            const userSubscribedConv = new ConversationsClient(deviceToken)
-            conversationClient.current = userSubscribedConv
-            userSubscribedConv.on("initialized", twilioConversationClientOnInit)
-        }
 
-        return () => {
-            if (conversationClient.current) {
-                conversationClient.current.off("initialized", twilioConversationClientOnInit)
-                conversationClient.current.off("conversationUpdated", twilioConversationClientOnConversationUpdate)
-            }
-        }
-    }, [deviceToken])
+        twilioConversationClientOnInit()
+    }, [dummyCounter])
 
-    const pushUnReaMessagesCountNotificationOnLogin = (dt, ue) => {
+    const pushUnReaMessagesCountNotificationOnLogin = (dt) => {
         //deviceToken.current = deviceToken
         setDeviceToken(dt)
-        userEmailRef.current = ue
+        setDummyCounter(prevVal => prevVal + 0.5) // Increment to trigger re-render
+        //userEmailRef.current = ue
     }
 
     const pushUnReaMessagesCountNotificationOnConversationUpdate = (convSID, isAppFocussed) => {
@@ -118,8 +123,19 @@ const useAppMessageNotification = () => {
         setIsAppInFocus(isAppFocussed)
     }
 
+    const markConversationRead = (convSID) => {
+        if (conversationUnreadCounts.current[convSID] > 0) {
+            totalUnReadMessagesRef.current -= conversationUnreadCounts.current[convSID]
+            conversationUnreadCounts.current[convSID] = 0
+            const n = new NotificationService()
+            n.removeAllDeliveredNotifications()
+            PushNotification.setApplicationIconBadgeNumber(0)
+        }
+    }
+
     return {pushUnReaMessagesCountNotificationOnLogin
-        , pushUnReaMessagesCountNotificationOnConversationUpdate};
+        , pushUnReaMessagesCountNotificationOnConversationUpdate
+        , markConversationRead};
 }
 
 export default useAppMessageNotification;

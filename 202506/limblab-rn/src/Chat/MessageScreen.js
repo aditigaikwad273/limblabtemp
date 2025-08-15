@@ -38,10 +38,9 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker"
 import Video from "react-native-video"
 import VideoPlayer from "./VideoPlayer"
 import uuid from "react-native-uuid"
-import NotificationService from '../utils/NotificationService';
 
 export default MessageScreen = (props) => {
-	const { user, mainUser, setMainUser, logout } = useContext(AuthContext)
+	const { user, mainUser, setMainUser, logout, markConversationRead } = useContext(AuthContext)
 	const route = useRoute()
 	const sid = route.params?.sid
 	const userCode = user?.data?.api_token
@@ -72,8 +71,7 @@ export default MessageScreen = (props) => {
 
 			fetchData()
 		}
-		const n = new NotificationService()
-		n.removeAllDeliveredNotifications()
+
 	}, [userRole])
 
 	const fetchData = async () => {
@@ -112,6 +110,7 @@ export default MessageScreen = (props) => {
 
 	useEffect(() => {
 		fetchData()
+		markConversationRead(sid)
 	}, [sid])
 
 	useEffect(() => {
@@ -198,16 +197,15 @@ export default MessageScreen = (props) => {
 						conversation?.updateLastReadMessageIndex(index)
 					})
 			} else {
-				await conversation
-				?.sendMessage(newMessages[0].text, { urgency: urgency})
-				/*conversation
+				conversation
 					?.prepareMessage()
 					.setBody(newMessages[0]?.text)
+					.setAttributes({ urgency: urgency })
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
-					})*/
+					})
 			}
 			if (userRole === "client")
 				analytics().logEvent("client_message_sent", { clinician: `${clinician?.first_name} ${clinician?.last_name}` })
@@ -249,7 +247,7 @@ export default MessageScreen = (props) => {
 			</>
 		)
 	}
-	// const actionIcon = () => {
+// const actionIcon = () => {
 	//   if(urgency === '0'){
 	//     <Image
 	//             style={{ width: 30, height: 28.3 }}
@@ -388,100 +386,100 @@ export default MessageScreen = (props) => {
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 				keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} // adjust as needed
 			>
-				<GiftedChat
-					bottomOffset={1}
-					isKeyboardInternallyHandled={true}
-					renderUsernameOnMessage={true}
-					messages={messages}
-					messagesContainerStyle={styles.messageContainer}
-					onSend={(messages) => onSend(messages)}
-					alwaysShowSend={true}
-					showAvatarForEveryMessage={true}
-					user={{
-						_id: user.data.email,
-						name: `${(user.data.firstName, user.data.lastName)}`,
-					}}
-					renderMessageVideo={(props) => {
-						return (
-							<VideoPlayer
-								url={props.currentMessage.video}
-								style={{
-									width: 200,
-									height: 200,
-									margin: 3,
-									borderRadius: 5,
-									overflow: "hidden",
-									backgroundColor: "black",
-								}}
-							/>
-						)
-					}}
-					renderSend={(props) => (
-						<Send
-							{...props}
-							containerStyle={{
-								width: 30,
-								height: 30,
-								bottom: 12,
-								right: 10,
-								justifyContent: "center",
-							}}
-						>
-							<Image source={Images.icnSend} />
-						</Send>
-					)}
-					renderComposer={renderComposer}
-					// renderInputToolbar={customInputToolbar}
-					renderActions={(props) => (
-						<View
+			<GiftedChat
+				bottomOffset={1}
+				isKeyboardInternallyHandled={true}
+				renderUsernameOnMessage={true}
+				messages={messages}
+				messagesContainerStyle={styles.messageContainer}
+				onSend={(messages) => onSend(messages)}
+				alwaysShowSend={true}
+				showAvatarForEveryMessage={true}
+				user={{
+					_id: user.data.email,
+					name: `${(user.data.firstName, user.data.lastName)}`,
+				}}
+				renderMessageVideo={(props) => {
+					return (
+						<VideoPlayer
+							url={props.currentMessage.video}
 							style={{
-								flexDirection: "row",
-								alignItems: "center",
-								justifyContent: "center",
+								width: 200,
+								height: 200,
+								margin: 3,
+								borderRadius: 5,
+								overflow: "hidden",
+								backgroundColor: "black",
 							}}
-						>
-							<Actions
-								{...props}
-								wrapperStyle={{ backgroundColor: "green" }}
-								containerStyle={{
-									paddingTop: 3,
-									margin: 5,
-								}}
-								icon={() => ({
-									...(urgency === "0" ? <Image source={Images.icnImportant} /> : <Image source={Images.icnImportant} />),
-								})}
-								options={{
-									URGENT: () => {
-										setUrgency("1")
-									},
-									Cancel: () => {
-										setUrgency("0")
-									},
-								}}
-							/>
-							<TouchableOpacity style={{ margin: 5 }} onPress={openCamera}>
-								<Image source={Images.icnCamera} />
-							</TouchableOpacity>
-							<TouchableOpacity style={{ margin: 5, paddingTop: 4 }} onPress={openPicker}>
-								<Image source={Images.icnPhoto} />
-							</TouchableOpacity>
-						</View>
-					)}
-					renderMessage={(props) => (
-						<Message
-							{...props}
-							containerStyle={{
-								right: {
-									marginBottom: image?.uri ? 170 : 50,
-								},
-								left: {
-									marginBottom: image?.uri ? 170 : 50,
-								},
-							}}
-							renderBubble={renderBubble}
 						/>
-					)}
-				/>
+					)
+				}}
+				renderSend={(props) => (
+					<Send
+						{...props}
+						containerStyle={{
+							width: 30,
+							height: 30,
+							bottom: 12,
+							right: 10,
+							justifyContent: "center",
+						}}
+					>
+						<Image source={Images.icnSend} />
+					</Send>
+				)}
+				renderComposer={renderComposer}
+				// renderInputToolbar={customInputToolbar}
+				renderActions={(props) => (
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<Actions
+							{...props}
+							wrapperStyle={{ backgroundColor: "green" }}
+							containerStyle={{
+								paddingTop: 3,
+								margin: 5,
+							}}
+							icon={() => ({
+								...(urgency === "0" ? <Image source={Images.icnImportant} /> : <Image source={Images.icnImportant} />),
+							})}
+							options={{
+								URGENT: () => {
+									setUrgency("1")
+								},
+								Cancel: () => {
+									setUrgency("0")
+								},
+							}}
+						/>
+						<TouchableOpacity style={{ margin: 5 }} onPress={openCamera}>
+							<Image source={Images.icnCamera} />
+						</TouchableOpacity>
+						<TouchableOpacity style={{ margin: 5, paddingTop: 4 }} onPress={openPicker}>
+							<Image source={Images.icnPhoto} />
+						</TouchableOpacity>
+					</View>
+				)}
+				renderMessage={(props) => (
+					<Message
+						{...props}
+						containerStyle={{
+							right: {
+								marginBottom: image?.uri ? 170 : 50,
+							},
+							left: {
+								marginBottom: image?.uri ? 170 : 50,
+							},
+						}}
+						renderBubble={renderBubble}
+					/>
+				)}
+			/>
 			</KeyboardAvoidingView>
 			<Modal
 				style={{ margin: 0 }}
