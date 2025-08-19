@@ -91,7 +91,7 @@ export default RegisterCode = (props) => {
 					</Text>
 					<Text style={styles.noCode}>Don't have a clinician code?</Text>
 					<Text style={styles.call}>Contact Megan during regular business hours at 507-951-8462 </Text>
-					<Text style={styles.call}>or after hours at megan@limblab.com.</Text>
+					<Text style={styles.call}>or after hours at dev@limblab.com.</Text>
 				</View>
 			</SafeAreaView>
 		</TouchableWithoutFeedback>

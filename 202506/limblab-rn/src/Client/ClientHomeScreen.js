@@ -25,8 +25,6 @@ import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-
 import Modal from "react-native-modal"
 import createAxiosInstance from "../utils/API"
 import { Client as ConversationsClient } from "@twilio/conversations"
-import PushNotification from "react-native-push-notification"
-import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 //import NotificationService from '../utils/NotificationService';

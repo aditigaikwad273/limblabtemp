@@ -1,101 +1,85 @@
 import UIKit
-import UserNotifications
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
+import UserNotifications
+import Foundation
+import RNCPushNotificationIOS
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-  var window: UIWindow?
-
-  var reactNativeDelegate: ReactNativeDelegate?
-  var reactNativeFactory: RCTReactNativeFactory?
-
-  func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-  ) -> Bool {
-    
-    // Initialize Firebase
+class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
+  override func application(_ application: UIApplication,
+                            didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
-    
-    // Initialize AppCenter
+
+     // Initialize AppCenter
     AppCenterReactNative.register()
     AppCenterReactNativeCrashes.register()
 
-    // Set UNUserNotificationCenter delegate
-    UNUserNotificationCenter.current().delegate = self
+    //TODO: change name RnDiffApp
+    self.moduleName = "limblab"
+    self.dependencyProvider = RCTAppDependencyProvider()
 
-    // Setup React Native Factory
-    let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
-    delegate.dependencyProvider = RCTAppDependencyProvider()
+    // You can add your custom initial props in the dictionary below.
+    // They will be passed down to the ViewController used by React Native.
+    self.initialProps = [:]
 
-    reactNativeDelegate = delegate
-    reactNativeFactory = factory
+    UIApplication.shared.registerForRemoteNotifications()
 
-    window = UIWindow(frame: UIScreen.main.bounds)
-    factory.startReactNative(
-      withModuleName: "limblab",
-      in: window,
-      launchOptions: launchOptions
-    )
+    let center = UNUserNotificationCenter.current()
+    center.delegate = self
 
-    return true
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // MARK: - Push Notification Handling
-
-  // func application(_ application: UIApplication,
-  //                  didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-  //   RNCPushNotificationIOS.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
-  // }
-
-  // func application(_ application: UIApplication,
-  //                  didFailToRegisterForRemoteNotificationsWithError error: Error) {
-  //   RNCPushNotificationIOS.didFailToRegisterForRemoteNotificationsWithError(error)
-  // }
-
-  func application(_ application: UIApplication,
-                   didReceiveRemoteNotification userInfo: [AnyHashable : Any],
-                   fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    RNCPushNotificationIOS.didReceiveRemoteNotification(userInfo, fetchCompletionHandler: completionHandler)
+  // Required to register for notifications
+  override func application(_ application: UIApplication, didRegister notificationSettings: UIUserNotificationSettings) {
+    RNCPushNotificationIOS.didRegister(notificationSettings)
   }
 
+  // Required for the register event
+  override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    RNCPushNotificationIOS.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
+  }
+
+  // Required for the notification event
+  override func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+      RNCPushNotificationIOS.didReceiveRemoteNotification(userInfo, fetchCompletionHandler: completionHandler)
+  }
+
+  // Required for the registrationError event
+  override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+      RNCPushNotificationIOS.didFailToRegisterForRemoteNotificationsWithError(error)
+  }
+
+  // IOS 10+ Required for localNotification event
+  func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+      RNCPushNotificationIOS.didReceive(response)
+      completionHandler()
+  }
+
+  // IOS 4-10 Required for the localNotification event
+  override func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
+      RNCPushNotificationIOS.didReceive(notification)
+  }
+
+  // Called when a notification is delivered to a foreground app
   func userNotificationCenter(_ center: UNUserNotificationCenter,
                               willPresent notification: UNNotification,
                               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    completionHandler([.alert, .badge, .sound])
+      completionHandler([.alert, .badge, .sound])
   }
 
-  func userNotificationCenter(_ center: UNUserNotificationCenter,
-                              didReceive response: UNNotificationResponse,
-                              withCompletionHandler completionHandler: @escaping () -> Void) {
-    RNCPushNotificationIOS.didReceive(response)
-    completionHandler()
-  }
-}
-
-// MARK: - React Native Delegate
-
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
-
-  // Disable faulty third-party Fabric components registration
-  @objc func thirdPartyFabricComponents() -> [String: Any] {
-    return [:]
+  override func sourceURL(for bridge: RCTBridge) -> URL? {
+    self.bundleURL()
   }
 
-  override func sourceURL(for bridge: RCTBridge!) -> URL! {
-    return self.bundleURL()
-  }
-
-  override func bundleURL() -> URL! {
+  override func bundleURL() -> URL? {
 #if DEBUG
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+ RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
 #else
-    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
   }
 }
-

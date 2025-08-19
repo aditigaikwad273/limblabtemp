@@ -20,7 +20,6 @@ import { AuthContext } from "../utils/authContext"
 import { RFValue } from "react-native-responsive-fontsize"
 import Modal from "react-native-modal"
 import { Card } from "react-native-elements"
-import PushNotification from "react-native-push-notification"
 import analytics from "@react-native-firebase/analytics"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 const windowWidth = Dimensions.get("window").width

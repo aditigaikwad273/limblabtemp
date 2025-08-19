@@ -20,8 +20,6 @@ import { ListItem, Icon } from "react-native-elements"
 import createAxiosInstance from "../utils/API"
 import { useNavigation } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native"
-import PushNotification from "react-native-push-notification"
-import PushNotificationIOS from "@react-native-community/push-notification-ios"
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
 import { Client as ConversationsClient } from "@twilio/conversations"
