@@ -40,7 +40,7 @@ export default ResourcesScreen = (props) => {
 		},
 		{
 			title: "LimbLab Store",
-			status: "https://limblab.com/services/",
+			status: "https://www.promoplace.com/limblab",
 		},
 		{
 			title: "Privacy Policy",
