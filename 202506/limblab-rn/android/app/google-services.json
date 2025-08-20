@@ -1,82 +1,118 @@
 {
-	"project_info": {
-		"project_number": "763106904719",
-		"project_id": "limb-lab",
-		"storage_bucket": "limb-lab.appspot.com"
-	},
-	"client": [
-		{
-			"client_info": {
-				"mobilesdk_app_id": "1:763106904719:android:e6d1aaadc6696e837f7efa",
-				"android_client_info": {
-					"package_name": "com.limblab"
-				}
-			},
-			"oauth_client": [
-				{
-					"client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
-					"client_type": 3
-				}
-			],
-			"api_key": [
-				{
-					"current_key": "AIzaSyB80N60aHElO29RgUfW8xt0yOOKkfw6t80"
-				}
-			],
-			"services": {
-				"appinvite_service": {
-					"other_platform_oauth_client": [
-						{
-							"client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
-							"client_type": 3
-						},
-						{
-							"client_id": "763106904719-dvpfopf4ogt36fhbane9qim8s2cn0vgj.apps.googleusercontent.com",
-							"client_type": 2,
-							"ios_info": {
-								"bundle_id": "net.accella.limblab"
-							}
-						}
-					]
-				}
-			}
-		},
-		{
-			"client_info": {
-				"mobilesdk_app_id": "1:763106904719:android:d54e88a0a7245fdd7f7efa",
-				"android_client_info": {
-					"package_name": "com.limblab.app"
-				}
-			},
-			"oauth_client": [
-				{
-					"client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
-					"client_type": 3
-				}
-			],
-			"api_key": [
-				{
-					"current_key": "AIzaSyB80N60aHElO29RgUfW8xt0yOOKkfw6t80"
-				}
-			],
-			"services": {
-				"appinvite_service": {
-					"other_platform_oauth_client": [
-						{
-							"client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
-							"client_type": 3
-						},
-						{
-							"client_id": "763106904719-dvpfopf4ogt36fhbane9qim8s2cn0vgj.apps.googleusercontent.com",
-							"client_type": 2,
-							"ios_info": {
-								"bundle_id": "net.accella.limblab"
-							}
-						}
-					]
-				}
-			}
-		}
-	],
-	"configuration_version": "1"
+  "project_info": {
+    "project_number": "763106904719",
+    "project_id": "limb-lab",
+    "storage_bucket": "limb-lab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763106904719:android:e6d1aaadc6696e837f7efa",
+        "android_client_info": {
+          "package_name": "com.limblab"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB80N60aHElO29RgUfW8xt0yOOKkfw6t80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763106904719-dvpfopf4ogt36fhbane9qim8s2cn0vgj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.accella.limblab"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763106904719:android:d54e88a0a7245fdd7f7efa",
+        "android_client_info": {
+          "package_name": "com.limblab.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB80N60aHElO29RgUfW8xt0yOOKkfw6t80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763106904719-dvpfopf4ogt36fhbane9qim8s2cn0vgj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.accella.limblab"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763106904719:android:5c4ba48cf4bc6a667f7efa",
+        "android_client_info": {
+          "package_name": "com.limblabprod.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB80N60aHElO29RgUfW8xt0yOOKkfw6t80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763106904719-gqvnpbnm4eaua5h3t04t62f82uvj26n9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763106904719-dvpfopf4ogt36fhbane9qim8s2cn0vgj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.accella.limblab"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }
