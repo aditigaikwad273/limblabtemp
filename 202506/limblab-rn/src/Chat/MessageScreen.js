@@ -37,6 +37,7 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker"
 import Video from "react-native-video"
 import VideoPlayer from "./VideoPlayer"
 import uuid from "react-native-uuid"
+import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-effect"
 
 export default MessageScreen = (props) => {
 	const { user, mainUser, setMainUser, logout, markConversationRead } = useContext(AuthContext)
@@ -53,6 +54,19 @@ export default MessageScreen = (props) => {
 	const [height, setHeight] = useState(16)
 	const [modalVisible, setModalVisible] = useState(false)
 	const [clinician, setClinician] = useState()
+
+	useAppStateAwareFocusEffect(
+			React.useCallback(() => {
+				let active = true
+				;(async () => {
+					markConversationRead(sid)
+				})()
+	
+				return () => {
+					active = false
+				}
+			}, [])
+		)
 
 	useEffect(() => {
 		if (userRole === "client") {
@@ -87,15 +101,16 @@ export default MessageScreen = (props) => {
 				if (!sid || sid === message.conversation.sid) {
 					const { giftedId } = message.attributes
 					if (giftedId) {
-						const newMessage = parseMessage(message)
-						setMessages((prevMessages) => {
-							const index = prevMessages.findIndex(({ _id }) => _id === giftedId)
-							if (index !== -1) {
-								prevMessages[index] = newMessage
-								return prevMessages
-							}
-							return [newMessage, ...prevMessages]
-						})
+						if (user?.data.email != message.author) {
+								parseMessage(message).then((newMessage) => {
+									setMessages((prevMessages) => {
+										message.conversation.updateLastReadMessageIndex(message.index)
+										markConversationRead(message.conversation.sid)
+										console.log("Kapil message with index marked for unread", message.index)
+										return [newMessage, ...prevMessages]
+									})
+							})
+						}
 					}
 				}
 			})
@@ -187,23 +202,22 @@ export default MessageScreen = (props) => {
 					?.prepareMessage()
 					.setBody("")
 					.addMedia(formData)
-					.setAttributes({ urgency: urgency })
+					.setAttributes({ urgency: urgency, giftedId: newMessages[0]._id })
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
 					})
 			} else {
-				await conversation
-				?.sendMessage(newMessages[0].text, { urgency: urgency})
-				/*conversation
+				conversation
 					?.prepareMessage()
 					.setBody(newMessages[0]?.text)
+					.setAttributes({ urgency: urgency, giftedId: newMessages[0]._id })
 					.build()
 					.send()
 					.then((index) => {
 						conversation?.updateLastReadMessageIndex(index)
-					})*/
+					})
 			}
 			if (userRole === "client")
 				analytics().logEvent("client_message_sent", { clinician: `${clinician?.first_name} ${clinician?.last_name}` })
