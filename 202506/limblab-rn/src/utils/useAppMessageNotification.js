@@ -106,7 +106,7 @@ const useAppMessageNotification = () => {
                 totalUnReadMessagesRef.current = totalUnReadMessages
 
                 const n = new NotificationService()
-                if (dummyCounter === 0) {
+                if (totalUnReadMessages === 0) {
                     n.removeAllDeliveredNotifications()
                     PushNotification.setApplicationIconBadgeNumber(0)
                 }
