@@ -55,6 +55,8 @@ export default MessageScreen = (props) => {
 	const [height, setHeight] = useState(16)
 	const [modalVisible, setModalVisible] = useState(false)
 	const [clinician, setClinician] = useState()
+	const [showImage, setShowImage] = useState(false)
+	const [selectedImage, setSelectedImage] = useState(null)
 
 	useAppStateAwareFocusEffect(
 			React.useCallback(() => {
