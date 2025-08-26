@@ -8,6 +8,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { Alert } from "react-native"
 import useAppMessageNotification from "./useAppMessageNotification"
 import messaging from '@react-native-firebase/messaging';
+import useGlobalAppStateListener from './useGlobalAppStateListener'
+
 const storeData = async (value) => {
 	try {
 		const jsonValue = JSON.stringify(value)
@@ -22,23 +24,41 @@ export const AuthProvider = ({ children }) => {
 	const [clientNotes, setClientNotes] = useState(null)
 	const [clinicianCode, setClinicianCode] = useState(null)
 	const [noClinician, setNoClinician] = useState(false)
-	const {pushUnReaMessagesCountNotificationOnLogin,
-		pushUnReaMessagesCountNotificationOnConversationUpdate,
+	const {onForegroundActivation,
+		onForegroundNotificationReceived,
+		onBackGroundNotificationReceived,
+		onBackGroundActivation,
 		markConversationRead
 	} = useAppMessageNotification()
+	const appState = useGlobalAppStateListener()
 
 	useEffect(() => {
 	const unsubscribe = messaging().onMessage(async remoteMessage => {
-			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID, true)
-		});
-
-		// Background/Killed state messages
-		messaging().setBackgroundMessageHandler(async remoteMessage => {
-			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID, false)
+			console.log("Foregound message recd", remoteMessage)
+			onForegroundNotificationReceived(remoteMessage.data.conversationSID)
 		});
 
 		return unsubscribe;
 	}, []);
+
+	// Background/Killed state messages
+	messaging().setBackgroundMessageHandler(async remoteMessage => {
+		//console.log("Background message recd", remoteMessage)
+		onBackGroundNotificationReceived(remoteMessage.data.conversationSID)
+	});
+
+	useEffect(() => {
+		if (appState === "background") {
+			if (user){
+				onBackGroundActivation()
+			}
+		} else if (appState === "active") {
+			if (user){
+				const twto = user.data.twilio_token
+				onForegroundActivation(twto)//refresh collections from twilio calls
+			}
+		}
+	}, [appState]);
 
 	const api = createAxiosInstance()
 
@@ -56,7 +76,6 @@ export const AuthProvider = ({ children }) => {
 				setClinicianCode,
 				noClinician,
 				setNoClinician,
-				pushUnReaMessagesCountNotificationOnLogin,
 				markConversationRead,
 				login: (email, password, props, autoLogin = false, silent = false) => {
 					api
@@ -69,7 +88,7 @@ export const AuthProvider = ({ children }) => {
 								analytics().logEvent("login")
 							}
 							if (typeof props === "function") {
-								// console.warn("props", props)
+								onForegroundActivation(data.data.twilio_token)
 								props(data.data)
 							}
 						})

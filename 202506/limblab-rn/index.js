@@ -13,14 +13,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
  const onRegister = async (token) => {
     await AsyncStorage.setItem('deviceToken', token.token)
   }
-
+/*
   const onNotif = (notification) => {
+    console.log('Notification received:', notification);
     notification.finish(PushNotificationIOS.FetchResult.NoData);
-  }
+  }*/
 
   new NotificationService(
-      onRegister,
-      onNotif,
+      onRegister
     );
 
 if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
