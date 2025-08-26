@@ -9,14 +9,6 @@ import {
 import NotificationService from './src/utils/NotificationService';
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import messaging from '@react-native-firebase/messaging';
-
-		// Background/Killed state messages
-		messaging().setBackgroundMessageHandler(async remoteMessage => {
-			console.log("Background message recd", remoteMessage)
-			//pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID, false)
-		});
-
 
  const onRegister = async (token) => {
     console.log('Registered with token:', token.token);

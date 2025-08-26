@@ -75,8 +75,9 @@ export default class NotificationService {
   }
 
   badgeCountUpdateOnlyNotif() {
-    this.lastId++;
+    //this.lastId++;
     PushNotification.localNotification({
+      id: 9999,
       channelId: "badge-only-channel2",
       message: " ",
       playSound: false,
@@ -173,9 +174,9 @@ export default class NotificationService {
     PushNotification.cancelLocalNotification(this.lastId);
   }
 
-  cancelNotifById(idToRemove) {
-    PushNotification.cancelLocalNotification(idToRemove);
-    PushNotification.removeDeliveredNotifications([idToRemove])
+  cancelOnlyLastSilentNotif() {
+    PushNotification.cancelLocalNotification(9999);//android
+    //PushNotification.removeDeliveredNotifications([this.lastSilentNotifyId])//ios
   }
 
   removeAllDeliveredNotifications() {

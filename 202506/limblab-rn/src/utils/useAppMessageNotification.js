@@ -64,13 +64,6 @@ const useAppMessageNotification = () => {
             if (eventFired != foregroundNotification) {
                 setRefreshNewCount(true)
             }
-            else{//when foreground remove silent notification set if any
-                /*const n = new NotificationService()
-                if (Platform.OS === androidOSName) {
-                    n.cancelNotifById('foreground-silent')
-                    PushNotification.setApplicationIconBadgeNumber(0)
-                }*/ 
-            }
             
             setConversationSID('')
             //}
@@ -119,6 +112,8 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+                    const n = new NotificationService()
+                    n.cancelOnlyLastSilentNotif()
                 }
                 catch(e){
                     console.log(e)
@@ -164,6 +159,10 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+
+                    const n = new NotificationService()
+                    n.cancelOnlyLastSilentNotif()
+                    //PushNotification.setApplicationIconBadgeNumber(0)
                 }
                 catch(e){
                     console.log(e)

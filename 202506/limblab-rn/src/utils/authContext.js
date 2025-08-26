@@ -52,7 +52,9 @@ export const AuthProvider = ({ children }) => {
 	useEffect(() => {
 		if (appState === "background") {
 			console.log("Kapil, App went to background");
-			onBackGroundActivation()
+			if (user){
+				onBackGroundActivation()
+			}
 		} else if (appState === "active") {
 			if (user){
 				const twto = user.data.twilio_token
