@@ -15,6 +15,7 @@ const useAppMessageNotification = () => {
     const [refreshNewCount, setRefreshNewCount] = useState(false)
     //const [foreGroundActivateUnReadCount, setForeGroundActivateUnReadCount] = useState(0)
     const [dummyCounter, setDummyCounter] = useState(0)//dumycounter to track every time app gets focus
+    const userEmailRef = useRef('')
     const androidOSName = 'android'
 
     const foregroundNotification = 'foregroundNotification'
@@ -121,17 +122,26 @@ const useAppMessageNotification = () => {
             }        
         }
 
+    const twilioConversationUpdated = async ({ conversation, updateReasons }) => {
+        if (conversation._internalState.uniqueName != userEmailRef.current) {
+            setConversationSID(conversation)
+            setEventFired(foregroundNotification)
+        }
+    }
+
     useEffect(() => {        
         if (deviceToken && deviceToken !== '') {
             conversationClient.current = new ConversationsClient(deviceToken)
             console.log("Setting up Twilio Conversations client with device token:")
             //setDummyCouner(0.5);//reset on login
             conversationClient.current.on("initialized", twilioConversationClientOnInit2)
+            conversationClient.current.on("conversationUpdated", twilioConversationUpdated)
         }
         
         return () => {
             if (conversationClient.current) {
                 conversationClient.current.off("initialized", twilioConversationClientOnInit2)
+                conversationClient.current.off("conversationUpdated", twilioConversationUpdated)
             }
         }
     }, [deviceToken])
@@ -173,18 +183,13 @@ const useAppMessageNotification = () => {
         twilioConversationClientOnInit()
     }, [dummyCounter])
 
-    const onForegroundActivation = (dt) => {
+    const onForegroundActivation = (dt, uemail) => {
         console.log('dt', dt)
         setDeviceToken(dt)
+        userEmailRef.current = uemail
         console.log('dummyCounter', dummyCounter)
         setDummyCounter(prevVal => prevVal + 0.5) // Increment to trigger re-render
         console.log("Device token set in pushUnReaMessagesCountNotificationOnLogin:")
-    }
-
-    const onForegroundNotificationReceived = (convSID) => {
-        console.log("Kapil, onForegroundNotificationReceived:", convSID)
-        setConversationSID(convSID)
-        setEventFired(foregroundNotification)
     }
 
     const onBackGroundNotificationReceived = (convSID) => {
@@ -212,7 +217,6 @@ const useAppMessageNotification = () => {
     }
 
     return {onForegroundActivation: onForegroundActivation
-        ,onForegroundNotificationReceived: onForegroundNotificationReceived
         ,onBackGroundNotificationReceived: onBackGroundNotificationReceived
         ,onBackGroundActivation: onBackGroundActivation
         ,markConversationRead};
