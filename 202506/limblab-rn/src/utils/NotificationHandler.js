@@ -1,12 +1,13 @@
 import PushNotification from 'react-native-push-notification';
 
 class NotificationHandler {
+  /*
   onNotification(notification) {
 
     if (typeof this._onNotification === 'function') {
       this._onNotification(notification);
     }
-  }
+  }*/
 
   onRegister(token) {
 
@@ -31,10 +32,10 @@ class NotificationHandler {
   attachRegister(handler) {
     this._onRegister = handler;
   }
-
+/*
   attachNotification(handler) {
     this._onNotification = handler;
-  }
+  }*/
 }
 
 const handler = new NotificationHandler();
@@ -44,7 +45,7 @@ PushNotification.configure({
   onRegister: handler.onRegister.bind(handler),
 
   // (required) Called when a remote or local notification is opened or received
-  onNotification: handler.onNotification.bind(handler),
+  //onNotification: handler.onNotification.bind(handler),
 
   // (optional) Called when Action is pressed (Android)
   onAction: handler.onAction.bind(handler),
