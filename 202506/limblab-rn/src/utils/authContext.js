@@ -28,19 +28,10 @@ export const AuthProvider = ({ children }) => {
 		onForegroundNotificationReceived,
 		onBackGroundNotificationReceived,
 		onBackGroundActivation,
-		markConversationRead
+		markConversationRead,
+		setUserEmail
 	} = useAppMessageNotification()
 	const appState = useGlobalAppStateListener()
-
-	useEffect(() => {
-	const unsubscribe = messaging().onMessage(async remoteMessage => {
-			console.log("Foregound message recd", remoteMessage)
-			onForegroundNotificationReceived(remoteMessage.data.conversationSID)
-		});
-
-		return unsubscribe;
-	}, []);
-
 	// Background/Killed state messages
 	messaging().setBackgroundMessageHandler(async remoteMessage => {
 		//console.log("Background message recd", remoteMessage)
@@ -55,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 		} else if (appState === "active") {
 			if (user){
 				const twto = user.data.twilio_token
-				onForegroundActivation(twto)//refresh collections from twilio calls
+				onForegroundActivation(twto, user.data.email)//refresh collections from twilio calls
 			}
 		}
 	}, [appState]);
@@ -88,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 								analytics().logEvent("login")
 							}
 							if (typeof props === "function") {
-								onForegroundActivation(data.data.twilio_token)
+								onForegroundActivation(data.data.twilio_token, data.data.email)
 								props(data.data)
 							}
 						})
