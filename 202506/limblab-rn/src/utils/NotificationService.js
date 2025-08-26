@@ -9,14 +9,9 @@ export default class NotificationService {
     this.createDefaultChannels();
 
     NotificationHandler.attachRegister(onRegister);
-    NotificationHandler.attachNotification(onNotification);
+    //NotificationHandler.attachNotification(onNotification);
 
     // Clear badge number at start
-    /*PushNotification.getApplicationIconBadgeNumber(function (number) {
-      if (number > 0) {
-        PushNotification.setApplicationIconBadgeNumber(0);
-      }
-    });*/
     
     PushNotification.getChannels(function(channels) {
       console.log(channels);
@@ -176,6 +171,11 @@ export default class NotificationService {
 
   cancelNotif() {
     PushNotification.cancelLocalNotification(this.lastId);
+  }
+
+  cancelNotifById(idToRemove) {
+    PushNotification.cancelLocalNotification(idToRemove);
+    PushNotification.removeDeliveredNotifications([idToRemove])
   }
 
   removeAllDeliveredNotifications() {

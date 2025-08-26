@@ -10,10 +10,16 @@ const useAppMessageNotification = () => {
     const conversationClient = useRef(null)
     const [deviceToken, setDeviceToken] = useState(null)
     const [conversationSID, setConversationSID] = useState('')
-    const [isAppInFocus, setIsAppInFocus] = useState(true)
+    //const [isAppInFocus, setIsAppInFocus] = useState(true)
+    const [eventFired, setEventFired] = useState('')
     const [refreshNewCount, setRefreshNewCount] = useState(false)
+    //const [foreGroundActivateUnReadCount, setForeGroundActivateUnReadCount] = useState(0)
     const [dummyCounter, setDummyCounter] = useState(0)//dumycounter to track every time app gets focus
     const androidOSName = 'android'
+
+    const foregroundNotification = 'foregroundNotification'
+    const backgroundNotification = 'backgroundNotification'
+    const backgroundActivation = 'backgroundActivation'
 
     useEffect(() => {
         if (conversationSID === '') {
@@ -30,6 +36,7 @@ const useAppMessageNotification = () => {
             //const authorParticipant = await latestMessagr.items[0].getParticipant()
             //console.log("Participant author in conversation:", authorParticipant)
             //if (authorParticipant.identity !== userEmailRef.current) {
+            if (eventFired != backgroundActivation) {
                 let total = totalUnReadMessagesRef.current
                 total += 1
 
@@ -45,16 +52,27 @@ const useAppMessageNotification = () => {
                 console.log("conversationUnreadCounts", conversationUnreadCounts.current)
                 totalUnReadMessagesRef.current = total
                 console.log("Unread messages overall:", totalUnReadMessagesRef.current)
+            }
                 
-                if (Platform.OS === androidOSName) {
-                    const n = new NotificationService()
-                    n.removeAllDeliveredNotifications()
-                    PushNotification.setApplicationIconBadgeNumber(0)
-                }
+            /*
+            if (Platform.OS === androidOSName) {
+                const n = new NotificationService()
+                n.removeAllDeliveredNotifications()
+                PushNotification.setApplicationIconBadgeNumber(0)
+            }*/
                 
-                console.log("Cleared badge count to 0 in twilioConversationClientOnConversationUpdate")
+            if (eventFired != foregroundNotification) {
                 setRefreshNewCount(true)
-                setConversationSID('')                    
+            }
+            else{//when foreground remove silent notification set if any
+                /*const n = new NotificationService()
+                if (Platform.OS === androidOSName) {
+                    n.cancelNotifById('foreground-silent')
+                    PushNotification.setApplicationIconBadgeNumber(0)
+                }*/ 
+            }
+            
+            setConversationSID('')
             //}
         //}
     }, [conversationSID])
@@ -63,108 +81,121 @@ const useAppMessageNotification = () => {
         if (refreshNewCount) {
             if (Platform.OS === androidOSName) {
                 const n = new NotificationService()
-                if (!isAppInFocus) {
+                if (eventFired === backgroundNotification) {
                     n.localNotif('You have a new LimbLab message waiting for you')
                 }
-                else{
-                    n.badgeCountUpdateOnlyNotif()
+                else if (eventFired === backgroundActivation) {
+                    console.log('Kapil, Changing the background activation badge count')
+                    n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
                 }
             }
-            
+
             console.log("badge count setting to: ", totalUnReadMessagesRef.current)
             PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+            
             setRefreshNewCount(false)
-        }
-        
+        }   
     }, [refreshNewCount])
-/*
-    useEffect(() => {
-        const fetchConversation = async () => {
-            console.log("Fetching conversation with SID:", conversationSID)
-            console.log("Fetching conversation with Conversation client:", conversationClient.current)
-            if (conversationClient.current && conversationSID && isAppInFocus) {
-                console.log("Fetching conversation by SID:", conversationSID)
-                let cv = await conversationClient.current.getConversationBySid(conversationSID)
-                console.log("Fetched conversation by SID:", cv)
-                await twilioConversationClientOnConversationUpdate(cv, ['lastReadMessageIndex'])
-            }
+
+    const twilioConversationClientOnInit2 = async () => {
+            if (conversationClient.current){
+                console.log("Refreshing badge count on focus:")
+                let totalUnReadMessages = 0
+                try {
+                    const conversationList = await conversationClient.current.getSubscribedConversations()
+
+                    while(1){
+                        for (let i = 0; i < conversationList.items.length; i++) {
+                            const item = conversationList.items[i]
+                            const withUnRead = await item.getUnreadMessagesCount()
+                            conversationUnreadCounts.current[item.sid] = withUnRead || 0
+                            totalUnReadMessages += withUnRead
+                        }
+                        if (conversationList.hasNextPage) {
+                            conversationList = await conversationList.nextPage()
+                        }
+                        else {
+                            break
+                        }
+                    }
+                    totalUnReadMessagesRef.current = totalUnReadMessages
+                }
+                catch(e){
+                    console.log(e)
+                }
+            }        
         }
 
-        fetchConversation()
-
-    }, [conversationSID])
-*/
     useEffect(() => {        
         if (deviceToken && deviceToken !== '') {
-            console.log("Setting up Twilio Conversations client with device token:")
-            setDummyCounter(0);//reset on login
             conversationClient.current = new ConversationsClient(deviceToken)
-            //userSubscribedConv.on("initialized", twilioConversationClientOnInit)
+            console.log("Setting up Twilio Conversations client with device token:")
+            //setDummyCouner(0.5);//reset on login
+            conversationClient.current.on("initialized", twilioConversationClientOnInit2)
         }
-        /*
+        
         return () => {
             if (conversationClient.current) {
-                conversationClient.current.off("initialized", twilioConversationClientOnInit)
-                //conversationClient.current.off("conversationUpdated", twilioConversationClientOnConversationUpdate)
+                conversationClient.current.off("initialized", twilioConversationClientOnInit2)
             }
-        }*/
+        }
     }, [deviceToken])
 
     useEffect(() => {
         const twilioConversationClientOnInit = async () => {
-            if (conversationClient.current){
+            if (conversationClient.current && dummyCounter > 0.5){//not for first time, since that fires from oninitialize
                 console.log("Refreshing badge count on focus:")
                 let totalUnReadMessages = 0
-                const conversationList = await conversationClient.current.getSubscribedConversations()
-                while(1){
-                    for (let i = 0; i < conversationList.items.length; i++) {
-                        const item = conversationList.items[i]
-                        const withUnRead = await item.getUnreadMessagesCount()
-                        conversationUnreadCounts.current[item.sid] = withUnRead || 0
-                        totalUnReadMessages += withUnRead
-                    }
-                    if (conversationList.hasNextPage) {
-                        conversationList = await conversationList.nextPage()
-                    }
-                    else {
-                        break
-                    }
-                }
-                totalUnReadMessagesRef.current = totalUnReadMessages
+                try {
+                    const conversationList = await conversationClient.current.getSubscribedConversations()
 
-                const n = new NotificationService()
-                if (totalUnReadMessages === 0) {
-                    n.removeAllDeliveredNotifications()
-                    PushNotification.setApplicationIconBadgeNumber(0)
-                }
-                if (totalUnReadMessages > 0) {
-                    if (Platform.OS === androidOSName) {
-                        n.badgeCountUpdateOnlyNotif()
+                    while(1){
+                        for (let i = 0; i < conversationList.items.length; i++) {
+                            const item = conversationList.items[i]
+                            const withUnRead = await item.getUnreadMessagesCount()
+                            conversationUnreadCounts.current[item.sid] = withUnRead || 0
+                            totalUnReadMessages += withUnRead
+                        }
+                        if (conversationList.hasNextPage) {
+                            conversationList = await conversationList.nextPage()
+                        }
+                        else {
+                            break
+                        }
                     }
-                    PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
+                    totalUnReadMessagesRef.current = totalUnReadMessages
                 }
-                //conversationClient.current.on("conversationUpdated", twilioConversationClientOnConversationUpdate)
+                catch(e){
+                    console.log(e)
+                }
             }        
         }
 
         twilioConversationClientOnInit()
     }, [dummyCounter])
 
-    const pushUnReaMessagesCountNotificationOnLogin = (dt) => {
-        //deviceToken.current = deviceToken
+    const onForegroundActivation = (dt) => {
+        console.log('dt', dt)
         setDeviceToken(dt)
+        console.log('dummyCounter', dummyCounter)
         setDummyCounter(prevVal => prevVal + 0.5) // Increment to trigger re-render
         console.log("Device token set in pushUnReaMessagesCountNotificationOnLogin:")
-        //userEmailRef.current = ue
     }
 
-    const pushUnReaMessagesCountNotificationOnConversationUpdate = (convSID, isAppFocussed) => {
-        console.log("Current state on Conversation SI and isAppFocused")
-        console.log(conversationSID, isAppInFocus)
+    const onForegroundNotificationReceived = (convSID) => {
+        console.log("Kapil, onForegroundNotificationReceived:", convSID)
         setConversationSID(convSID)
-        setIsAppInFocus(isAppFocussed)
-        console.log("Set the state on Conversation SI and isAppFocused")
-        console.log(convSID, isAppFocussed)
+        setEventFired(foregroundNotification)
+    }
+
+    const onBackGroundNotificationReceived = (convSID) => {
+        setConversationSID(convSID)
+        setEventFired(backgroundNotification)
+    }
+
+    const onBackGroundActivation = () => {
+        setConversationSID('backGroundActivationSID')
+        setEventFired(backgroundActivation)
     }
 
     const markConversationRead = (convSID) => {
@@ -181,9 +212,11 @@ const useAppMessageNotification = () => {
         }
     }
 
-    return {pushUnReaMessagesCountNotificationOnLogin
-        , pushUnReaMessagesCountNotificationOnConversationUpdate
-        , markConversationRead};
+    return {onForegroundActivation: onForegroundActivation
+        ,onForegroundNotificationReceived: onForegroundNotificationReceived
+        ,onBackGroundNotificationReceived: onBackGroundNotificationReceived
+        ,onBackGroundActivation: onBackGroundActivation
+        ,markConversationRead};
 }
 
 export default useAppMessageNotification;

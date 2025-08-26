@@ -8,6 +8,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { Alert } from "react-native"
 import useAppMessageNotification from "./useAppMessageNotification"
 import messaging from '@react-native-firebase/messaging';
+import useGlobalAppStateListener from './useGlobalAppStateListener'
+/*import { AppState } from "react-native";
+*/
 const storeData = async (value) => {
 	try {
 		const jsonValue = JSON.stringify(value)
@@ -22,26 +25,60 @@ export const AuthProvider = ({ children }) => {
 	const [clientNotes, setClientNotes] = useState(null)
 	const [clinicianCode, setClinicianCode] = useState(null)
 	const [noClinician, setNoClinician] = useState(false)
-	const {pushUnReaMessagesCountNotificationOnLogin,
-		pushUnReaMessagesCountNotificationOnConversationUpdate,
+	const {onForegroundActivation,
+		onForegroundNotificationReceived,
+		onBackGroundNotificationReceived,
+		onBackGroundActivation,
 		markConversationRead
 	} = useAppMessageNotification()
+	//const [appState, setAppState] = useState(AppState.currentState);
+	const appState = useGlobalAppStateListener()
 
 	useEffect(() => {
 	const unsubscribe = messaging().onMessage(async remoteMessage => {
 			console.log("Foregound message recd", remoteMessage)
-			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID, true)
-		});
-
-		// Background/Killed state messages
-		messaging().setBackgroundMessageHandler(async remoteMessage => {
-			console.log("Background message recd", remoteMessage)
-			pushUnReaMessagesCountNotificationOnConversationUpdate(remoteMessage.data.conversationSID, false)
+			onForegroundNotificationReceived(remoteMessage.data.conversationSID)
 		});
 
 		return unsubscribe;
 	}, []);
 
+	// Background/Killed state messages
+	messaging().setBackgroundMessageHandler(async remoteMessage => {
+		//console.log("Background message recd", remoteMessage)
+		onBackGroundNotificationReceived(remoteMessage.data.conversationSID)
+	});
+
+	useEffect(() => {
+		if (appState === "background") {
+			console.log("Kapil, App went to background");
+			onBackGroundActivation()
+		} else if (appState === "active") {
+			if (user){
+				const twto = user.data.twilio_token
+				console.log("Kapil, App came to foreground", twto);
+				onForegroundActivation(twto)//refresh collections from twilio calls
+				console.log("Kapil, App came to complete foreground");
+			}
+		}
+	}, [appState]);
+/*
+	useEffect(() => {
+    const subscription = AppState.addEventListener("change", nextAppState => {
+      //console.log("App state changed to:", nextAppState);
+      if (appState === "active" && nextAppState.match(/inactive|background/)){
+		if (user){
+			pushUnReaMessagesCountNotificationOnLogin(user.data.twilio_token)
+		}
+      }
+      setAppState(nextAppState);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+*/
 	const api = createAxiosInstance()
 
 	return (
@@ -58,7 +95,6 @@ export const AuthProvider = ({ children }) => {
 				setClinicianCode,
 				noClinician,
 				setNoClinician,
-				pushUnReaMessagesCountNotificationOnLogin,
 				markConversationRead,
 				login: (email, password, props, autoLogin = false, silent = false) => {
 					api
@@ -68,10 +104,12 @@ export const AuthProvider = ({ children }) => {
 								return data.api_token
 							} else {
 								setUser(data)
+
 								analytics().logEvent("login")
 							}
 							if (typeof props === "function") {
-								// console.warn("props", props)
+								console.log('Kapil, on login calling foreground activation')
+								onForegroundActivation(data.data.twilio_token)
 								props(data.data)
 							}
 						})
