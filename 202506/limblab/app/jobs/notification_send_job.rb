@@ -33,14 +33,46 @@ class NotificationSendJob < ApplicationJob
   def message_for(notification, conversationSID)
     payload = notification.payload || {}
 
-    aps = { aps: { alert: notification.body, sound: 'default', badge: 1 } }
-    gcm = { notification: { title: 'LimbLab', body: notification.body } }
-    
+    # Build APS depending on whether it's visible or silent
+    aps = if notification.body.present?
+            {
+              aps: {
+                alert: {
+                  title: 'LimbLab',
+                  body: notification.body
+                },
+                sound: 'default',
+                badge: 1
+              }
+            }
+          else
+            {
+              aps: {
+                'content-available' => 1
+              }
+            }
+          end
+
+    # Merge custom data into APNS
+    apns_payload = payload.merge(aps).merge({ conversationSID: conversationSID })
+
+    # GCM (Android) — always include both notification & data
+    gcm = {
+      notification: {
+        title: 'LimbLab',
+        body: notification.body
+      },
+      data: payload.merge({
+        notificationId: notification.id,
+        conversationSID: conversationSID
+      })
+    }
+
     message = {}
-    message[:default] = notification.body
-    message[:APNS_SANDBOX] = payload.merge(aps).to_json
-    message[:APNS] = payload.merge(aps).to_json
-    message[:GCM] =  { data: payload.merge({ notificationId: notification.id, conversationSID: conversationSID }) }.merge(gcm).to_json
+    message[:default] = notification.body || "New message"
+    message[:APNS_SANDBOX] = apns_payload.to_json
+    message[:APNS] = apns_payload.to_json
+    message[:GCM] = gcm.to_json
 
     message.to_json
   end
