@@ -2,11 +2,11 @@ class NotificationSendJob < ApplicationJob
   ERRORS = [ Aws::SNS::Errors::EndpointDisabled,
              Aws::SNS::Errors::PlatformApplicationDisabled,
              Aws::SNS::Errors::InvalidParameter ]
-  
-  def perform(notification, conversationSID)
+
+  def perform(notification, conversationSID, messageCreatedAt)
     options = {}
     options[:target_arn] = notification.device.arn
-    options[:message] = message_for(notification, conversationSID)
+    options[:message] = message_for(notification, conversationSID, messageCreatedAt)
     options[:message_structure] = "json"
 
     begin
@@ -30,42 +30,44 @@ class NotificationSendJob < ApplicationJob
 
   private
 
-  def message_for(notification, conversationSID)
-    payload = notification.payload || {}
+  def message_for(notification, conversationSID, messageCreatedAt)
+        payload = notification.payload || {}
 
-    # Build APS depending on whether it's visible or silent
-    aps = if notification.body.present?
-            {
-              aps: {
-                alert: {
-                  title: 'LimbLab',
-                  body: notification.body
-                },
-                sound: 'default',
-                badge: 1
-              }
-            }
-          else
-            {
-              aps: {
-                'content-available' => 1
-              }
-            }
-          end
+        # Build APS depending on whether it's visible or silent
+        aps = if notification.body.present?
+        {
+          aps: {
+            alert: {
+              title: 'LimbLab',
+              body: notification.body
+            },
+            sound: 'default',
+            badge: 1
+          }
+        }
+      else
+        {
+          aps: {
+            'content-available' => 1
+          }
+        }
+      end
 
-    # Merge custom data into APNS
-    apns_payload = payload.merge(aps).merge({ conversationSID: conversationSID })
+      # Merge custom data into APNS
+      apns_payload = payload.merge(aps).merge({ conversationSID: conversationSID, messageCreatedAt: messageCreatedAt })
 
-    # GCM (Android) — always include both notification & data
+      # GCM (Android) — always include both notification & data
     gcm = {
-      notification: {
-        title: 'LimbLab',
-        body: notification.body
-      },
-      data: payload.merge({
-        notificationId: notification.id,
-        conversationSID: conversationSID
-      })
+            notification: {
+            title: 'LimbLab',
+            body: notification.body
+            },
+            priority: "high",
+            data: payload.merge({
+            notificationId: notification.id,
+            conversationSID: conversationSID,
+            messageCreatedAt: messageCreatedAt
+            })
     }
 
     message = {}

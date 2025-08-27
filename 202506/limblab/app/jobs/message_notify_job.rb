@@ -2,15 +2,15 @@ class MessageNotifyJob < ApplicationJob
   def perform(message, conversationSID)
     unless message.client?
       message.conversation.client.devices.active.each do |device|
-        NotificationSendJob.perform_later(Notification.create!(device: device, body: body_for(message)), conversationSID)
+        NotificationSendJob.perform_later(Notification.create!(device: device, body: body_for(message)), conversationSID, message.created_at)
       end
     end
     message.conversation.client.relationships.active.each do |relationship|
       unless message.clinician == relationship.clinician
         relationship.clinician.devices.active.each do |device|
-          NotificationSendJob.perform_later(Notification.create!(device: device, body: body_for(message)), conversationSID)
+          NotificationSendJob.perform_later(Notification.create!(device: device, body: body_for(message)), conversationSID, message.created_at)
         end
-      end      
+      end
     end
   end
 
