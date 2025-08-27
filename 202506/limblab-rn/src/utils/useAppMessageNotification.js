@@ -8,11 +8,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
     const conversationUnreadCounts = useRef({})
+    const conversationLastReadMessageCreatedAt = useRef({})
     const conversationClient = useRef(null)
     const [deviceToken, setDeviceToken] = useState(null)
     const [conversationSID, setConversationSID] = useState('')
     const [eventFired, setEventFired] = useState('')
     const [refreshNewCount, setRefreshNewCount] = useState(false)
+    const foreGroundActivateUnReadCountRef = useRef(0)
     const [dummyCounter, setDummyCounter] = useState(0)//dumycounter to track every time app gets focus
     const userEmailRef = useRef('')
     const androidOSName = 'android'
@@ -46,8 +48,12 @@ const useAppMessageNotification = () => {
                 conversationUnreadCounts.current[conversationSID] += 1
                 totalUnReadMessagesRef.current = total
             }
-                
-                
+            else{
+                const n = new NotificationService()
+                n.cancelAll()
+            }
+
+             
             if (eventFired != foregroundNotification) {
                 setRefreshNewCount(true)
             }
@@ -60,18 +66,27 @@ const useAppMessageNotification = () => {
     useEffect(() => {
         if (refreshNewCount) {
             if (Platform.OS === androidOSName) {
-                const n = new NotificationService()
                 if (eventFired === backgroundNotification) {
+                    const n = new NotificationService()
                     n.localNotif('You have a new LimbLab message waiting for you')
+                    PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
                 }
-                else if (eventFired === backgroundActivation) {
-                    n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
-                }
+                else if (eventFired === backgroundActivation)
+                {
+                    if (foreGroundActivateUnReadCountRef.current > 0)
+                    {       
+                        const n = new NotificationService()             
+                        n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
+                        PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+                    }
+                }                
             }
-
-            PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+            else{
+                PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+            }
+            
             setRefreshNewCount(false)
-        }  
+        }
     }, [refreshNewCount])
 
     const twilioConversationClientOnInit2 = async () => {
@@ -95,6 +110,7 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+                    foreGroundActivateUnReadCountRef.current = 0
                     const n = new NotificationService()
                     n.cancelOnlyLastSilentNotif()
                 }
@@ -105,9 +121,32 @@ const useAppMessageNotification = () => {
         }
 
     const twilioConversationUpdated = async ({ conversation, updateReasons }) => {
-        if (conversation._internalState.uniqueName != userEmailRef.current) {
-            setConversationSID(conversation)
-            setEventFired(foregroundNotification)
+        try{
+            
+            if (conversation._internalState.uniqueName != userEmailRef.current) {
+                const isoFormat = conversation.lastMessage.dateCreated.toISOString()
+                await AsyncStorage.setItem("lastMessageCreatedAt", isoFormat)
+                if (conversationLastReadMessageCreatedAt.current[conversation.sid])
+                {
+                    const lastMessageCreatedDate = new Date(conversationLastReadMessageCreatedAt.current[conversation.sid])
+                    const messageCreatedDate = new Date(isoFormat)
+                    if (messageCreatedDate > lastMessageCreatedDate){
+                        foreGroundActivateUnReadCountRef.current += 1
+                        conversationLastReadMessageCreatedAt.current[conversation.sid] = isoFormat
+                        setConversationSID(conversation.sid)
+                        setEventFired(foregroundNotification)
+                    }
+                }
+                else {
+                    foreGroundActivateUnReadCountRef.current += 1
+                    conversationLastReadMessageCreatedAt.current[conversation.sid] = isoFormat
+                    setConversationSID(conversation.sid)
+                    setEventFired(foregroundNotification)
+                }
+            }
+        }
+        catch (e){
+            console.log(e)
         }
     }
 
@@ -115,13 +154,13 @@ const useAppMessageNotification = () => {
         if (deviceToken && deviceToken !== '') {
             conversationClient.current = new ConversationsClient(deviceToken)
             //setDummyCouner(0.5);//reset on login
-            conversationClient.current.on("initialized", twilioConversationClientOnInit2)
+            //conversationClient.current.on("initialized", twilioConversationClientOnInit2)
             conversationClient.current.on("conversationUpdated", twilioConversationUpdated)
         }
         
         return () => {
             if (conversationClient.current) {
-                conversationClient.current.off("initialized", twilioConversationClientOnInit2)
+                //conversationClient.current.off("initialized", twilioConversationClientOnInit2)
                 conversationClient.current.off("conversationUpdated", twilioConversationUpdated)
             }
         }
@@ -129,7 +168,7 @@ const useAppMessageNotification = () => {
 
     useEffect(() => {
         const twilioConversationClientOnInit = async () => {
-            if (conversationClient.current && dummyCounter > 0.5){//not for first time, since that fires from oninitialize
+            if (conversationClient.current){//not for first time, since that fires from oninitialize
                 let totalUnReadMessages = 0
                 try {
                     const conversationList = await conversationClient.current.getSubscribedConversations()
@@ -148,6 +187,7 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+                    foreGroundActivateUnReadCountRef.current = totalUnReadMessages
 
                     const n = new NotificationService()
                     n.cancelOnlyLastSilentNotif()
@@ -168,11 +208,6 @@ const useAppMessageNotification = () => {
         setDummyCounter(prevVal => prevVal + 0.5) // Increment to trigger re-render
     }
 
-    const onBackGroundNotificationReceived = (convSID) => {
-        setConversationSID(convSID)
-        setEventFired(backgroundNotification)
-    }
-
     const onBackGroundActivation = async () => {
         setConversationSID('backGroundActivationSID')
         setEventFired(backgroundActivation)
@@ -183,14 +218,15 @@ const useAppMessageNotification = () => {
         if (conversationUnreadCounts.current[convSID] > 0) {
             totalUnReadMessagesRef.current -= conversationUnreadCounts.current[convSID]
             conversationUnreadCounts.current[convSID] = 0
+            foreGroundActivateUnReadCountRef.current = 0
             const n = new NotificationService()
             n.removeAllDeliveredNotifications()
-            PushNotification.setApplicationIconBadgeNumber(0)
+            n.cancelAll()
+            //PushNotification.setApplicationIconBadgeNumber(0)
         }
     }
 
     return {onForegroundActivation: onForegroundActivation
-        ,onBackGroundNotificationReceived: onBackGroundNotificationReceived
         ,onBackGroundActivation: onBackGroundActivation
         ,markConversationRead};
 }

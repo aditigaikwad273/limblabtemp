@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
 	const [noClinician, setNoClinician] = useState(false)
 	const {onForegroundActivation,
 		onForegroundNotificationReceived,
-		onBackGroundNotificationReceived,
 		onBackGroundActivation,
 		markConversationRead,
 		setUserEmail
