@@ -3,6 +3,7 @@ import { Client as ConversationsClient } from "@twilio/conversations"
 import NotificationService from './NotificationService';
 import PushNotification from "react-native-push-notification"
 import { Platform } from 'react-native'
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
@@ -10,10 +11,9 @@ const useAppMessageNotification = () => {
     const conversationClient = useRef(null)
     const [deviceToken, setDeviceToken] = useState(null)
     const [conversationSID, setConversationSID] = useState('')
-    //const [isAppInFocus, setIsAppInFocus] = useState(true)
     const [eventFired, setEventFired] = useState('')
     const [refreshNewCount, setRefreshNewCount] = useState(false)
-    //const [foreGroundActivateUnReadCount, setForeGroundActivateUnReadCount] = useState(0)
+    const foreGroundActivateUnReadCountRef = useRef(0)
     const [dummyCounter, setDummyCounter] = useState(0)//dumycounter to track every time app gets focus
     const userEmailRef = useRef('')
     const androidOSName = 'android'
@@ -88,7 +88,7 @@ const useAppMessageNotification = () => {
             PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
             
             setRefreshNewCount(false)
-        }   
+        }  
     }, [refreshNewCount])
 
     const twilioConversationClientOnInit2 = async () => {
@@ -113,8 +113,11 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+                    //foreGroundActivateUnReadCountRef.current = 0
                     const n = new NotificationService()
                     n.cancelOnlyLastSilentNotif()
+                    //n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground/on first login
+                    //PushNotification.setApplicationIconBadgeNumber(totalUnReadMessages)
                 }
                 catch(e){
                     console.log(e)
@@ -169,6 +172,7 @@ const useAppMessageNotification = () => {
                         }
                     }
                     totalUnReadMessagesRef.current = totalUnReadMessages
+                    //foreGroundActivateUnReadCountRef.current = 0
 
                     const n = new NotificationService()
                     n.cancelOnlyLastSilentNotif()
@@ -197,9 +201,10 @@ const useAppMessageNotification = () => {
         setEventFired(backgroundNotification)
     }
 
-    const onBackGroundActivation = () => {
+    const onBackGroundActivation = async () => {
         setConversationSID('backGroundActivationSID')
         setEventFired(backgroundActivation)
+        await AsyncStorage.setItem("currentAppBadgeCount", totalUnReadMessagesRef.current.toString())
     }
 
     const markConversationRead = (convSID) => {
@@ -207,6 +212,7 @@ const useAppMessageNotification = () => {
             console.log("Marking conversation as read:", convSID)
             totalUnReadMessagesRef.current -= conversationUnreadCounts.current[convSID]
             conversationUnreadCounts.current[convSID] = 0
+            //foreGroundActivateUnReadCountRef.current = 0
             console.log("Marked conversation as read:", convSID)
             const n = new NotificationService()
             n.removeAllDeliveredNotifications()

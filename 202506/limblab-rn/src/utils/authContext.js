@@ -7,7 +7,7 @@ import analytics from "@react-native-firebase/analytics"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { Alert } from "react-native"
 import useAppMessageNotification from "./useAppMessageNotification"
-import messaging from '@react-native-firebase/messaging';
+//import messaging from '@react-native-firebase/messaging';
 import useGlobalAppStateListener from './useGlobalAppStateListener'
 /*import { AppState } from "react-native";
 */
@@ -35,10 +35,10 @@ export const AuthProvider = ({ children }) => {
 	//const [appState, setAppState] = useState(AppState.currentState);
 	const appState = useGlobalAppStateListener()
 	// Background/Killed state messages
-	messaging().setBackgroundMessageHandler(async remoteMessage => {
-		//console.log("Background message recd", remoteMessage)
-		onBackGroundNotificationReceived(remoteMessage.data.conversationSID)
-	});
+	/*messaging().setBackgroundMessageHandler(async remoteMessage => {
+		console.log("Background message recd", remoteMessage)
+		onBackGroundNotificationReceived(remoteMessage.data.conversationSID, remoteMessage.data.messageCreatedAt)
+	});*/
 
 	useEffect(() => {
 		if (appState === "background") {
