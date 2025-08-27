@@ -8,7 +8,9 @@ import {
 
 import NotificationService from './src/utils/NotificationService';
 import PushNotificationIOS from "@react-native-community/push-notification-ios"
+import PushNotification from "react-native-push-notification"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import messaging from '@react-native-firebase/messaging';
 
  const onRegister = async (token) => {
     await AsyncStorage.setItem('deviceToken', token.token)
@@ -19,9 +21,21 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
     notification.finish(PushNotificationIOS.FetchResult.NoData);
   }*/
 
-  new NotificationService(
+  const n = new NotificationService(
       onRegister
     );
+
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+      if (remoteMessage.priority > 0){
+        const currentAppBadgeCount = await AsyncStorage.getItem("currentAppBadgeCount")
+        currentAppBadgeCountInt = parseInt(currentAppBadgeCount)
+        n.cancelOnlyLastSilentNotif()
+        n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
+        PushNotification.setApplicationIconBadgeNumber(currentAppBadgeCountInt + 1)
+        currentAppBadgeCountInt += 1
+        await AsyncStorage.setItem("currentAppBadgeCount", currentAppBadgeCountInt.toString())
+      }
+    });
 
 if (Platform.OS === "android") PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
 
