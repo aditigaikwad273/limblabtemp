@@ -123,7 +123,7 @@ const useAppMessageNotification = () => {
     const twilioConversationUpdated = async ({ conversation, updateReasons }) => {
         try{
             
-            if (conversation._internalState.uniqueName != userEmailRef.current) {
+            if (conversation._configuration.userIdentity != userEmailRef.current) {
                 const isoFormat = conversation.lastMessage.dateCreated.toISOString()
                 await AsyncStorage.setItem("lastMessageCreatedAt", isoFormat)
                 if (conversationLastReadMessageCreatedAt.current[conversation.sid])

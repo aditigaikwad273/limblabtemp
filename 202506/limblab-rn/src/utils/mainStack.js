@@ -26,7 +26,6 @@ import NotificationManagementScreen from "../Client/NotificationManagementScreen
 import SplashScreen from "../OnBoarding/SplashScreen"
 import BiometricScreen from "../OnBoarding/BiometricScreen"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-effect"
 
 
 const Stack = createStackNavigator()
@@ -271,20 +270,7 @@ const ClinicianStack = () => {
 }
 
 export const MainStack = () => {
-	const { user, noClinician, pushUnReaMessagesCountNotificationOnLogin } = useContext(AuthContext)
-
-	useAppStateAwareFocusEffect(
-		React.useCallback(() => {
-			let active = true
-			;(async () => {
-				pushUnReaMessagesCountNotificationOnLogin(user.data?.twilio_token)
-			})()
-
-			return () => {
-				active = false
-			}
-		}, [])
-	)
+	const { user, noClinician } = useContext(AuthContext)
 
 	return (
 		<Stack.Navigator>
