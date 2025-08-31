@@ -36,8 +36,8 @@ import messaging from '@react-native-firebase/messaging';
         const remoteMessageDt = new Date(remoteMessage.data.messageCreatedAt)
         if (lastMessageCreatedAt == null || remoteMessageDt > lastMessageCreatedAtDt){
           let currentAppBadgeCountInt = parseInt(currentAppBadgeCount)
-          n.cancelOnlyLastSilentNotif()
-          n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
+          // n.cancelOnlyLastSilentNotif()
+          // n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
           PushNotification.setApplicationIconBadgeNumber(currentAppBadgeCountInt + 1)
           currentAppBadgeCountInt += 1
           await AsyncStorage.setItem("currentAppBadgeCount", currentAppBadgeCountInt.toString())

@@ -84,7 +84,8 @@ export default class NotificationService {
       soundName: 'default',
       importance: Importance.LOW,
       vibrate: false,
-      priority: 'low'
+      priority: 'low',
+      autoCancel:true
     })
   }
 
