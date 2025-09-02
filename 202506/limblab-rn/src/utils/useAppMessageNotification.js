@@ -120,11 +120,10 @@ const useAppMessageNotification = () => {
             }        
         }
 
-    const twilioConversationUpdated = async ({ conversation, updateReasons }) => {
+    const twilioConversationUpdated = async ({ conversation, author, dateCreated }) => {
         try{
-            
-            if (conversation._configuration.userIdentity != userEmailRef.current) {
-                const isoFormat = conversation.lastMessage.dateCreated.toISOString()
+            if (author != userEmailRef.current) {
+                const isoFormat = dateCreated.toISOString()
                 await AsyncStorage.setItem("lastMessageCreatedAt", isoFormat)
                 if (conversationLastReadMessageCreatedAt.current[conversation.sid])
                 {
@@ -155,13 +154,13 @@ const useAppMessageNotification = () => {
             conversationClient.current = new ConversationsClient(deviceToken)
             //setDummyCouner(0.5);//reset on login
             //conversationClient.current.on("initialized", twilioConversationClientOnInit2)
-            conversationClient.current.on("conversationUpdated", twilioConversationUpdated)
+            conversationClient.current.on("messageAdded", twilioConversationUpdated)
         }
         
         return () => {
             if (conversationClient.current) {
                 //conversationClient.current.off("initialized", twilioConversationClientOnInit2)
-                conversationClient.current.off("conversationUpdated", twilioConversationUpdated)
+                conversationClient.current.off("messageAdded", twilioConversationUpdated)
             }
         }
     }, [deviceToken])
