@@ -45,26 +45,30 @@ export default ClinicianHomeScreen = (props) => {
 	const navigation = useNavigation()
 	//const conversationsClient = useRef()
 	
-	useEffect(async () => {
-		try {
-			const api = createAxiosInstance(userCode)
+	useEffect(() => {
+		const fetchLocationAndClientRelations = async () => {
+			try {
+				const api = createAxiosInstance(userCode)
 
-			const locationData = await api.get("/api/v1/clinician/practices")
+				const locationData = await api.get("/api/v1/clinician/practices")
 
-			if (locationData.data?.length > 0) {
-				let primaryLocation = locationData.data.find((d) => d.primary)
-				if (!primaryLocation) primaryLocation = locationData.data[0]
-				setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
-			}
-
-			const data = await api.get("/api/v1/clinician/relationships")
-
-			if (data) {
-					setClientList(data.data.map((item) => ({ ...item, unRead: 0 })))
+				if (locationData.data?.length > 0) {
+					let primaryLocation = locationData.data.find((d) => d.primary)
+					if (!primaryLocation) primaryLocation = locationData.data[0]
+					setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
 				}
+
+				const data = await api.get("/api/v1/clinician/relationships")
+
+				if (data) {
+						setClientList(data.data.map((item) => ({ ...item, unRead: 0 })))
+					}
 			} catch (e) {
 				console.log("this is an error", e)
 			}
+		}
+
+		fetchLocationAndClientRelations()
 	}, [])
 	/*
 	useEffect(() => {
