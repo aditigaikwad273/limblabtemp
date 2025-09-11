@@ -24,12 +24,11 @@ const useAppMessageNotification = () => {
     const backgroundActivation = 'backgroundActivation'
 
     const incrementCountForSid = conversationSID => {
-        const dtUpdated = new Date(conversationLastReadMessageCreatedAt.current[conversationSID])//asuming done when message is added
         setConversationUnreadCounts(prev => 
                     ({
                         ...prev, 
                         [conversationSID]: {
-                            DateUpdated: dtUpdated,
+                            DateUpdated: conversationLastReadMessageCreatedAt.current[conversationSID],
                             UnReadMessageCount: (prev[conversationSID].UnReadMessageCount || 0) + 1
                         }
                     })
@@ -170,7 +169,7 @@ const useAppMessageNotification = () => {
                         for (let i = 0; i < conversationList.items.length; i++) {
                             const item = conversationList.items[i]
                             const withUnRead = await item.getUnreadMessagesCount()
-                            conversationUnreadCountsLocal[item.sid] = { UnReadMessageCount: withUnRead || 0, DateUpdated: item.dateUpdated  }
+                            conversationUnreadCountsLocal[item.sid] = { UnReadMessageCount: withUnRead || 0, DateUpdated: item.lastMessage?.dateCreated?.toISOString() || "" }
                             totalUnReadMessages += withUnRead
                         }
                         if (conversationList.hasNextPage) {
