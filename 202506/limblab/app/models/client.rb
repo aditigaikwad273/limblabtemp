@@ -12,4 +12,8 @@ class Client < ApplicationRecord
   def self.ransackable_attributes(auth_object = nil)
     ["active", "created_at", "email", "first_name", "id", "last_name", "password_reset_requested_at", "phone", "updated_at"]
   end
+
+  def active_conversation_sid
+    conversations.limit(1).pick(:api_token)
+  end
 end
