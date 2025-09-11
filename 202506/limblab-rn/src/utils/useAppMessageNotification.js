@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
-    const conversationUnreadCounts = useRef({})
+    const [conversationUnreadCounts, setConversationUnreadCounts] = useState({})
     const conversationLastReadMessageCreatedAt = useRef({})
     const conversationClient = useRef(null)
     const [deviceToken, setDeviceToken] = useState(null)
@@ -22,6 +22,31 @@ const useAppMessageNotification = () => {
     const foregroundNotification = 'foregroundNotification'
     const backgroundNotification = 'backgroundNotification'
     const backgroundActivation = 'backgroundActivation'
+
+    const incrementCountForSid = conversationSID => {
+        const dtUpdated = new Date(conversationLastReadMessageCreatedAt.current[conversationSID])//asuming done when message is added
+        setConversationUnreadCounts(prev => 
+                    ({
+                        ...prev, 
+                        [conversationSID]: {
+                            DateUpdated: dtUpdated,
+                            UnReadMessageCount: (prev[conversationSID].UnReadMessageCount || 0) + 1
+                        }
+                    })
+                )
+    }
+
+    const resetCounterForSid = conversationSID => {
+        setConversationUnreadCounts(prev => 
+                    ({
+                        ...prev, 
+                        [conversationSID]: {
+                            ...prev[conversationSID],
+                            UnReadMessageCount: 0
+                        }
+                    })
+                )
+    }
 
     useEffect(() => {
         if (conversationSID === '') {
@@ -45,7 +70,7 @@ const useAppMessageNotification = () => {
                 //const withUnRead = await conversation.getUnreadMessagesCount()
                 //total -= conversationUnreadCounts.current[conversation.sid] || 0
                 //total += withUnRead
-                conversationUnreadCounts.current[conversationSID] += 1
+                incrementCountForSid(conversationSID)
                 totalUnReadMessagesRef.current = total
             }
             else{
@@ -88,37 +113,6 @@ const useAppMessageNotification = () => {
             setRefreshNewCount(false)
         }
     }, [refreshNewCount])
-
-    const twilioConversationClientOnInit2 = async () => {
-            if (conversationClient.current){
-                let totalUnReadMessages = 0
-                try {
-                    const conversationList = await conversationClient.current.getSubscribedConversations()
-
-                    while(1){
-                        for (let i = 0; i < conversationList.items.length; i++) {
-                            const item = conversationList.items[i]
-                            const withUnRead = await item.getUnreadMessagesCount()
-                            conversationUnreadCounts.current[item.sid] = withUnRead || 0
-                            totalUnReadMessages += withUnRead
-                        }
-                        if (conversationList.hasNextPage) {
-                            conversationList = await conversationList.nextPage()
-                        }
-                        else {
-                            break
-                        }
-                    }
-                    totalUnReadMessagesRef.current = totalUnReadMessages
-                    foreGroundActivateUnReadCountRef.current = 0
-                    const n = new NotificationService()
-                    n.cancelOnlyLastSilentNotif()
-                }
-                catch(e){
-                    console.log(e)
-                }
-            }        
-        }
 
     const twilioConversationUpdated = async ({ conversation, author, dateCreated }) => {
         try{
@@ -171,11 +165,12 @@ const useAppMessageNotification = () => {
                 let totalUnReadMessages = 0
                 try {
                     const conversationList = await conversationClient.current.getSubscribedConversations()
+                    const conversationUnreadCountsLocal = {}
                     while(1){
                         for (let i = 0; i < conversationList.items.length; i++) {
                             const item = conversationList.items[i]
                             const withUnRead = await item.getUnreadMessagesCount()
-                            conversationUnreadCounts.current[item.sid] = withUnRead || 0
+                            conversationUnreadCountsLocal[item.sid] = { UnReadMessageCount: withUnRead || 0, DateUpdated: item.dateUpdated  }
                             totalUnReadMessages += withUnRead
                         }
                         if (conversationList.hasNextPage) {
@@ -190,6 +185,7 @@ const useAppMessageNotification = () => {
 
                     const n = new NotificationService()
                     n.cancelOnlyLastSilentNotif()
+                    setConversationUnreadCounts(conversationUnreadCountsLocal)
                     //PushNotification.setApplicationIconBadgeNumber(0)
                 }
                 catch(e){
@@ -214,9 +210,9 @@ const useAppMessageNotification = () => {
     }
 
     const markConversationRead = (convSID) => {
-        if (conversationUnreadCounts.current[convSID] > 0) {
-            totalUnReadMessagesRef.current -= conversationUnreadCounts.current[convSID]
-            conversationUnreadCounts.current[convSID] = 0
+        if (conversationUnreadCounts[convSID].UnReadMessageCount > 0) {
+            totalUnReadMessagesRef.current -= conversationUnreadCounts[convSID].UnReadMessageCount
+            resetCounterForSid(convSID)
             foreGroundActivateUnReadCountRef.current = 0
             const n = new NotificationService()
             n.removeAllDeliveredNotifications()
@@ -227,7 +223,9 @@ const useAppMessageNotification = () => {
 
     return {onForegroundActivation: onForegroundActivation
         ,onBackGroundActivation: onBackGroundActivation
-        ,markConversationRead};
+        ,markConversationRead: markConversationRead
+        ,conversationUnreadCounts: conversationUnreadCounts
+    };
 }
 
 export default useAppMessageNotification;

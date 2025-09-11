@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native"
 const windowWidth = Dimensions.get("window").width
 const windowHeight = Dimensions.get("window").height
-import { Client as ConversationsClient } from "@twilio/conversations"
+//import { Client as ConversationsClient } from "@twilio/conversations"
 import useAppStateAwareFocusEffect from "react-navigation-app-state-aware-focus-effect"
 import moment from "moment"
 import { set } from "react-native-reanimated"
@@ -30,7 +30,7 @@ import { set } from "react-native-reanimated"
 
 
 export default ClinicianHomeScreen = (props) => {
-	const { user, mainUser, setMainUser, logout, setSelectedClient } = useContext(AuthContext)
+	const { user, mainUser, setMainUser, logout, setSelectedClient, conversationUnreadCounts } = useContext(AuthContext)
 	const userFirstName = user.data.first_name
 	const userLastName = user.data.last_name
 	const userTitle = user.data.title
@@ -43,40 +43,30 @@ export default ClinicianHomeScreen = (props) => {
 	const [newList, setNewList] = useState([])
 	const userRole = user.data.role
 	const navigation = useNavigation()
-	const conversationsClient = useRef()
-	useAppStateAwareFocusEffect(
-		React.useCallback(() => {
-			let active = true
+	//const conversationsClient = useRef()
+	
+	useEffect(async () => {
+		try {
+			const api = createAxiosInstance(userCode)
 
-			;(async () => {
-				try {
-					const api = createAxiosInstance(userCode)
+			const locationData = await api.get("/api/v1/clinician/practices")
 
-					const locationData = await api.get("/api/v1/clinician/practices")
-
-					if (locationData.data?.length > 0) {
-						let primaryLocation = locationData.data.find((d) => d.primary)
-						if (!primaryLocation) primaryLocation = locationData.data[0]
-						setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
-					}
-
-					const data = await api.get("/api/v1/clinician/relationships")
-
-					if (active && data) {
-						setClientList(data.data)
-						setNewList(data.data.map((item) => ({ ...item, unRead: 0 })))
-					}
-				} catch (e) {
-					console.log("this is an error", e)
-				}
-			})()
-
-			return () => {
-				active = false
+			if (locationData.data?.length > 0) {
+				let primaryLocation = locationData.data.find((d) => d.primary)
+				if (!primaryLocation) primaryLocation = locationData.data[0]
+				setUserLocation(`${primaryLocation.city}, ${primaryLocation.state}`)
 			}
-		}, [])
-	)
 
+			const data = await api.get("/api/v1/clinician/relationships")
+
+			if (data) {
+					setClientList(data.data.map((item) => ({ ...item, unRead: 0 })))
+				}
+			} catch (e) {
+				console.log("this is an error", e)
+			}
+	}, [])
+	/*
 	useEffect(() => {
 		const fetchData = async () => {
 			if (conversations.length === 0) return
@@ -105,13 +95,9 @@ export default ClinicianHomeScreen = (props) => {
 
 		fetchData()
 	}, [conversations])
-	useEffect(() => {
+	useEffect(() => {		
 		if (!conversationsClient.current) return
 		conversationsClient.current.on("conversationUpdated", async ({ conversation, updateReasons }) => {
-			/*let firstUpdateReason = ''
-			if (updateReasons.length > 0) {
-				firstUpdateReason = updateReasons[0]
-			}*/
 			let clientObj = []
 			let total = 0
 			for (let i = 0; i < conversations.length; i++) {
@@ -124,17 +110,6 @@ export default ClinicianHomeScreen = (props) => {
 					unRead: withUnRead,
 				})
 			}
-/*
-			if (firstUpdateReason !== 'lastReadMessageIndex') {
-				const latestMessagr = await conversation?.getMessages(1)
-				const authorParticipant = await latestMessagr.items[0].getParticipant()
-				if (authorParticipant.identity !== user.data.email) {
-					const n = new NotificationService()
-					n.badgeCountUpdateOnlyNotif()
-					PushNotification.setApplicationIconBadgeNumber(total)	
-				}
-			}*/
-
 			setNewList(clientObj)
 		})
 	}, [conversationsClient.current])
@@ -161,7 +136,43 @@ export default ClinicianHomeScreen = (props) => {
 			}
 		}, [])
 	)
+	*/
+	useEffect(() => {
+		const sorted = clientList.slice().sort((a, b) => {
+				const aUnRead = conversationUnreadCounts[a.conversation_sid]?.UnReadMessageCount || 0
+				const bUnRead = conversationUnreadCounts[b.conversation_sid]?.UnReadMessageCount || 0
 
+				if (bUnRead > 0 &&  aUnRead === 0) {
+					return bUnRead - aUnRead
+				}
+				else if (aUnRead > 0 && bUnRead === 0) {
+					return bUnRead - aUnRead
+				}
+
+				//Apply date logic only if unread counts are both - or both +
+				const dateA = moment(conversationUnreadCounts[a.conversation_sid]?.DateUpdated || "")
+				const dateB = moment(conversationUnreadCounts[b.conversation_sid]?.DateUpdated || "")
+
+				if (dateA.isValid() && dateB.isValid()){
+					return dateB.diff(dateA, 'seconds')
+				}
+				else if (dateA.isValid()){
+					return -1
+				}
+				else if (dateB.isValid()){
+					return 1
+				}
+				return 0;
+			})
+
+			sorted.forEach((client) => {
+				client.unRead = conversationUnreadCounts[client.conversation_sid]?.UnReadMessageCount || 0
+			})
+
+			setSortedClientList(sorted)
+	}, [conversationUnreadCounts])
+
+/*
 	useEffect(() => {
 		if (newList.length > 0) {
 			const sorted = clientList.slice().sort((a, b) => {
@@ -182,7 +193,7 @@ export default ClinicianHomeScreen = (props) => {
 			setSortedClientList(updatedSorted)
 		}
 	}, [newList])
-
+*/
 
 	const getClientConvo = (info) => {
 		// setSelectedClient(info)
