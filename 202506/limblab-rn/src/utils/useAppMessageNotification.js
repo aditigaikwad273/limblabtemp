@@ -98,10 +98,13 @@ const useAppMessageNotification = () => {
                 }
                 else if (eventFired === backgroundActivation)
                 {
-                    if (foreGroundActivateUnReadCountRef.current > 0)
+                    if (foreGroundActivateUnReadCountRef.current > 0 && totalUnReadMessagesRef.current > 0 )
                     {       
                         const n = new NotificationService()             
                         n.badgeCountUpdateOnlyNotif()//update badge count only if any notification recd in foreground
+                        PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
+                    }
+                    else if (foreGroundActivateUnReadCountRef.current > 0){
                         PushNotification.setApplicationIconBadgeNumber(totalUnReadMessagesRef.current)
                     }
                 }                
