@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 const useAppMessageNotification = () => {
     const totalUnReadMessagesRef = useRef(0)
     const [conversationUnreadCounts, setConversationUnreadCounts] = useState({})
+    const [conversationsForLoggedUser, setConversationsForLoggedUser] = useState([])
     const conversationLastReadMessageCreatedAt = useRef({})
     const conversationClient = useRef(null)
     const [deviceToken, setDeviceToken] = useState(null)
@@ -158,27 +159,53 @@ const useAppMessageNotification = () => {
         }
     }, [deviceToken])
 
+    async function getUnreadCountsForPage() {
+        /*Used one at a time since getSubscribedConversations was taking more time*/
+        const results = await Promise.all(
+            conversationsForLoggedUser.map(async (item) => {
+                const conversationObj = await conversationClient.current.getConversationBySid(item)
+                let withUnRead = 0;
+                let dateUpdated = ''
+                if (conversationObj){
+                    try {
+                        withUnRead = await conversationObj.getUnreadMessagesCount()
+                        dateUpdated = conversationObj.lastMessage?.dateCreated?.toISOString()
+                    }
+                    catch(e){
+                    }
+                }
+                
+                return {
+                    sid: item,
+                    unreadMessageCount: withUnRead,
+                    dateUpdated: dateUpdated
+                };
+            })
+        );
+        return results;
+    }
+
     useEffect(() => {
         const twilioConversationClientOnInit = async () => {
-            if (conversationClient.current){//not for first time, since that fires from oninitialize
+            if (conversationClient.current && conversationsForLoggedUser.length){//not for first time, since that fires from oninitialize
                 let totalUnReadMessages = 0
                 try {
-                    const conversationList = await conversationClient.current.getSubscribedConversations()
+                    //const conversationList = await conversationClient.current.getSubscribedConversations()
                     const conversationUnreadCountsLocal = {}
-                    while(1){
-                        for (let i = 0; i < conversationList.items.length; i++) {
-                            const item = conversationList.items[i]
-                            const withUnRead = await item.getUnreadMessagesCount()
-                            conversationUnreadCountsLocal[item.sid] = { UnReadMessageCount: withUnRead || 0, DateUpdated: item.lastMessage?.dateCreated?.toISOString() || "" }
-                            totalUnReadMessages += withUnRead
-                        }
+                    const pageResults = await getUnreadCountsForPage();
+                    for (const { sid, unreadMessageCount, dateUpdated } of pageResults) {
+                        conversationUnreadCountsLocal[sid] = { UnReadMessageCount: unreadMessageCount, DateUpdated: dateUpdated };
+                        totalUnReadMessages += unreadMessageCount;
+                    }
+                    /*
+                    for(let ctr = 0; ctr < conversationsForLoggedUser.length; ctr++){
                         if (conversationList.hasNextPage) {
                             conversationList = await conversationList.nextPage()
                         }
                         else {
                             break
                         }
-                    }
+                    }*/
                     totalUnReadMessagesRef.current = totalUnReadMessages
                     foreGroundActivateUnReadCountRef.current = totalUnReadMessages
 
@@ -194,7 +221,7 @@ const useAppMessageNotification = () => {
         }
 
         twilioConversationClientOnInit()
-    }, [dummyCounter])
+    }, [dummyCounter, conversationsForLoggedUser])
 
     const onForegroundActivation = (dt, uemail) => {
         setDeviceToken(dt)
@@ -212,17 +239,18 @@ const useAppMessageNotification = () => {
         if (conversationUnreadCounts[convSID].UnReadMessageCount > 0) {
             totalUnReadMessagesRef.current -= conversationUnreadCounts[convSID].UnReadMessageCount
             resetCounterForSid(convSID)
-            foreGroundActivateUnReadCountRef.current = 0
-            const n = new NotificationService()
-            n.removeAllDeliveredNotifications()
-            n.cancelAll()
-            //PushNotification.setApplicationIconBadgeNumber(0)
+            foreGroundActivateUnReadCountRef.current += 1
         }
+    }
+
+    const onConversationsReceivedForLoggedUser = (conversations) => {
+        setConversationsForLoggedUser(conversations)
     }
 
     return {onForegroundActivation: onForegroundActivation
         ,onBackGroundActivation: onBackGroundActivation
         ,markConversationRead: markConversationRead
+        ,onConversationsReceivedForLoggedUser: onConversationsReceivedForLoggedUser
         ,conversationUnreadCounts: conversationUnreadCounts
     };
 }

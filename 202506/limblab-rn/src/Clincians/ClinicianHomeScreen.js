@@ -30,7 +30,7 @@ import { set } from "react-native-reanimated"
 
 
 export default ClinicianHomeScreen = (props) => {
-	const { user, mainUser, setMainUser, logout, setSelectedClient, conversationUnreadCounts } = useContext(AuthContext)
+	const { user, mainUser, setMainUser, logout, setSelectedClient, conversationUnreadCounts, onConversationsReceivedForLoggedUser } = useContext(AuthContext)
 	const userFirstName = user.data.first_name
 	const userLastName = user.data.last_name
 	const userTitle = user.data.title
@@ -61,6 +61,7 @@ export default ClinicianHomeScreen = (props) => {
 				const data = await api.get("/api/v1/clinician/relationships")
 
 				if (data) {
+						onConversationsReceivedForLoggedUser(data.data.map(item => item.conversation_sid))
 						setClientList(data.data.map((item) => ({ ...item, unRead: 0 })))
 					}
 			} catch (e) {

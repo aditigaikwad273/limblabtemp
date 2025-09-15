@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
 	const {onForegroundActivation,
 		onBackGroundActivation,
 		markConversationRead,
+		onConversationsReceivedForLoggedUser,
 		conversationUnreadCounts
 	} = useAppMessageNotification()
 	const appState = useGlobalAppStateListener()
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }) => {
 				setNoClinician,
 				markConversationRead,
 				conversationUnreadCounts,
+				onConversationsReceivedForLoggedUser,
 				login: (email, password, props, autoLogin = false, silent = false) => {
 					api
 						.post("/api/v1/sessions", { email, password })
