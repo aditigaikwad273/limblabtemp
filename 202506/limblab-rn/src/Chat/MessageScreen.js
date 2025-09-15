@@ -108,7 +108,7 @@ export default MessageScreen = (props) => {
 								parseMessage(message).then((newMessage) => {
 									setMessages((prevMessages) => {
 										message.conversation.updateLastReadMessageIndex(message.index)
-										markConversationRead(message.conversation.sid)
+										//markConversationRead(message.conversation.sid)
 										return [newMessage, ...prevMessages]
 									})
 							})
@@ -124,7 +124,7 @@ export default MessageScreen = (props) => {
 
 	useEffect(() => {
 		fetchData()
-		markConversationRead(sid)
+		//markConversationRead(sid)
 	}, [sid])
 
 	useEffect(() => {
